@@ -29,3 +29,8 @@ def extractLinks(pdf_path):
             seen.add(uri)
             ordered.append(uri)
     return ordered[1:]
+
+
+if __name__ == "__main__":
+    links = extractLinks("./Pitches.pdf")
+    print(links)
