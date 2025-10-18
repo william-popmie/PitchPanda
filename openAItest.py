@@ -1,23 +1,12 @@
-import os
-from openai import OpenAI
+from langchain.agents import create_agent
+from langchain_openai import ChatOpenAI
+from langchain.tools import tool
 
-# Try to load .env automatically if python-dotenv is available
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except Exception:
-    # dotenv is optional; environment variables may already be set
-    pass
-
-API_KEY = os.getenv("PITCH_PANDA_API_KEY")
-if not API_KEY:
-    raise RuntimeError("PITCH_PANDA_API_KEY is not set. Copy .env.example to .env and add your key, or set the environment variable.")
-
-client = OpenAI(api_key=API_KEY)
-
-response = client.responses.create(
+model = ChatOpenAI(
     model="gpt-5",
-    input="Write a one-sentence bedtime story about a unicorn."
+    temperature=0.1,
+    max_tokens=1000,
+    timeout=30
+    # ... (other params)
 )
-
-print(response.output_text)
+agent = create_agent(model, tools=tools)
