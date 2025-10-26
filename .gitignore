@@ -5,3 +5,8 @@
  .vscode/
 
 .env
+
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
