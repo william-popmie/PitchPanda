@@ -10,3 +10,6 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+
+RESULT.md
+input/Pitches.csv
