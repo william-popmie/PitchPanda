@@ -4,6 +4,7 @@ CSV utilities for reading startup information from Pitches.csv
 import csv
 import os
 from typing import List, Dict, Optional
+from utils import normalize_url
 
 
 def read_pitches_csv(csv_path: str = "input/Pitches.csv") -> List[Dict[str, str]]:
@@ -42,9 +43,11 @@ def read_pitches_csv(csv_path: str = "input/Pitches.csv") -> List[Dict[str, str]
             url = row[1].strip()
             
             if name and url:
+                # Normalize the URL to ensure consistency
+                normalized_url = normalize_url(url)
                 startups.append({
                     'name': name,
-                    'url': url
+                    'url': normalized_url
                 })
             else:
                 print(f"Warning: Row {row_num} has empty name or URL, skipping")

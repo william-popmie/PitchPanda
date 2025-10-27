@@ -12,6 +12,7 @@ load_dotenv()
 
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
+from utils import normalize_url
 
 
 API_KEY = os.getenv("PITCH_PANDA_API_KEY") or os.getenv("OPENAI_API_KEY")
@@ -69,26 +70,64 @@ def analyze_startup(company_url: str) -> str:
     print("Fetching website content...")
     website_content = fetch_website_content(company_url)
     
-    prompt = f"""I am part of a VC firm as a university intern and need to go through 40 startups a week and evaluate them on wether we should invest in them or not. Please help me with this process. I have fetched the content from the company website below. Give a very brief overview of the company: what they do, the problem they are solving and the solution they are providing. These three things need to be short and intuitive.
+    prompt = f"""You are an analyst helping a VC firm evaluate startups. Your role is to **inform, not pitch**. Be honest, factual, and clear. Don't make the startup sound better or worse than it is.
 
-After that also list me the names of the founders. If you can't find these in the website content, use your knowledge to search for founder information about this company, but look thoroughly for them
+Analyze the startup based on the website content below and structure your response EXACTLY as follows:
 
-Finally: list competitors for the given startup. Explain why they are competition and what they do the same and different. If they are literally doing exactly the same, even better. If they do like one or a couple things different, list them as well. The more the better with very brief explenations
+## Problem
+Explain the core problem the startup is solving. Be intuitive and understandable. 1-2 short paragraphs max.
+
+## Solution
+Summarize how their product solves the problem. Use examples if helpful, but keep it clear and concise. 1-2 short paragraphs max.
+
+## Market Advantage
+Assess if their advantage is defensible. Consider: proprietary tech, IP, speed to market, regulations, partnerships, network effects, or customer lock-in. Be honest—if there's no clear moat, say so. 1-2 short paragraphs max.
+
+## Team
+List core team members with:
+- Name, role
+- LinkedIn URL (only if you can confidently find it—don't guess)
+- Prior relevant and/or irrelevant experience (previous roles/companies)
+- Previous **founder** experience (if any)
+
+Use your knowledge to find team information if not on the website. Format as a clean list.
+
+## Things to Consider
+List concerns, red flags, or positive signals an investor would find relevant. Be factual and balanced. Examples:
+- "No live product yet"
+- "Founders previously scaled X to 5M users"
+- "High customer acquisition cost in this market"
+- "Strong early traction (X customers in Y months)"
+
+Use bullet points. 3-7 items.
+
+## Competition
+Create a markdown table of direct competitors:
+
+| Company | Website | Region | Same | Different |
+|---|---|---|---|---|
+| ... | ... | ... | ... | ... |
+
+**Be honest**: If a competitor does exactly the same thing, say so in "Same" and put "None" or "-" in "Different". Don't make this startup sound better than it is. The goal is to inform, not pitch. Be clear and specific about what they do the same and what they do differently.
+
+---
 
 Company URL: {company_url}
 
 Website Content:
-{website_content}"""
+{website_content}
+
+Remember: Be clear, factual, and informative. Don't oversell or undersell."""
     
     print("Analyzing with GPT-5...")
-    client = ChatOpenAI(model_name="gpt-5", temperature=0.5)
+    client = ChatOpenAI(model_name="gpt-5", temperature=0.3)
     response = client.invoke([HumanMessage(content=prompt)])
     return response.content
 
 
 if __name__ == "__main__":
     # Change this URL to analyze a different startup
-    company_url = "https://www.chartera.io/"
+    company_url = normalize_url("https://www.supercity.ai")
     
     print("Analyzing startup...")
     result = analyze_startup(company_url)
