@@ -12,4 +12,7 @@ __pycache__/
 *.pyd
 
 RESULT.md
-input/Pitches.csv
+
+# Ignore per-startup summaries (input) and generated analysis outputs
+input/
+output/
