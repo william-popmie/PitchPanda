@@ -16,3 +16,26 @@ RESULT.md
 # Ignore per-startup summaries (input) and generated analysis outputs
 input/
 output/
+
+# macOS
+.DS_Store
+
+# Python packaging / build
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+
+# Test / coverage
+.pytest_cache/
+coverage.xml
+
+# IDEs
+.idea/
+
+# Logs
+*.log
+
+# Ignore local secrets file
+.env.local
+.env.*.local

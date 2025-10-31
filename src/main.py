@@ -41,7 +41,7 @@ def analyze_node(state: AnalysisState) -> AnalysisState:
 
 def write_node(state: AnalysisState) -> AnalysisState:
     # Simple writer: you can reuse the render_markdown from Option A
-    from main import Analysis, render_markdown  # reuse schema & renderer
+    from src.main import Analysis, render_markdown  # reuse schema & renderer
     a = Analysis(**state.result_json)
     md = render_markdown(state.startup_name, state.startup_url, a)
     os.makedirs("output", exist_ok=True)
