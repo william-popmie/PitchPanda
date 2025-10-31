@@ -6,7 +6,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import StateGraph, END
 
-from .prompts.prompts import prompt
+from .prompts.prompts_problem_solution import prompt
 from .core.utils import fetch_website_text, slugify
 
 load_dotenv()
