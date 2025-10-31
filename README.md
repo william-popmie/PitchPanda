@@ -1,5 +1,148 @@
 ## PitchPanda
 
+A small toolkit for working with pitch PDFs and generating pitch-related artifacts.
+
+This README gives a short overview, a CLI-first setup (so a contributor can copy/paste the commands), and clear run instructions for the project already laid out in `src/`.
+
+## Overview
+
+- Purpose: extract, transform, and scaffold pitch content (PDFs, prompts, and output files) to help rapid pitch generation and iteration.
+- Layout: the code lives under `src/`. Orchestration tasks live under `src/orchestration` and prompts live under `src/prompts`.
+
+## Quick Setup (one-shot, CLI copy/paste)
+
+These commands assume macOS / zsh. They will:
+
+- clone the repository (SSH or HTTPS)
+- create + activate a Python virtual environment in `.venv`
+- install dependencies from `requirements.txt`
+- create a `.env` file and insert an `OPENAI_API_KEY` placeholder for you to replace
+
+Copy and run the block that matches how you clone (SSH or HTTPS):
+
+```bash
+# Clone (choose SSH or HTTPS)
+# SSH
+git clone git@github.com:william-popmie/PitchPanda.git
+# or HTTPS
+git clone https://github.com/william-popmie/PitchPanda.git
+
+cd PitchPanda
+
+# Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Upgrade pip and install requirements
+pip install --upgrade pip setuptools
+pip install -r requirements.txt
+
+# Create a .env with a placeholder OPENAI_API_KEY so you just edit the value
+cat > .env <<'EOF'
+OPENAI_API_KEY="insert here"
+EOF
+
+echo "Created .env — open it and replace INSERT HERE with your real API key."
+```
+
+Windows (PowerShell) equivalent notes:
+
+```powershell
+git clone https://github.com/william-popmie/PitchPanda.git
+cd PitchPanda
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip setuptools
+pip install -r requirements.txt
+
+# Create .env (PowerShell)
+@"
+OPENAI_API_KEY="insert here"
+"@ | Out-File -Encoding utf8 .env
+```
+
+After creation, open `.env` in a text editor and replace the placeholder with your actual API key (do NOT commit the key).
+
+## Running
+
+From the repository root with the virtualenv active you can run the main entrypoints:
+
+```bash
+# Primary entrypoint
+python -m src.main
+
+# Or orchestration graph (alternative entrypoint)
+python -m src.orchestration.graph_main
+```
+
+Notes:
+- Using `python -m` runs the `src` package as a module so relative imports in `src/` work cleanly.
+- If you prefer direct script runs, ensure your `PYTHONPATH` includes `./src`.
+
+## Example: quick smoke test
+
+1. Ensure `.venv` is active.
+2. Ensure `.env` contains a valid `OPENAI_API_KEY` (if the project relies on OpenAI calls).
+3. Run the main module:
+
+```bash
+python -m src.main
+```
+
+If the project expects input files, check `input/` for `Pitches.csv` and `output/` for generated files.
+
+## Project structure (top-level)
+
+```
+README.md
+requirements.txt
+input/             # sample input CSVs
+output/            # generated artifacts
+src/
+  main.py
+  core/
+  orchestration/
+  prompts/
+```
+
+## Troubleshooting
+
+- `ModuleNotFoundError` after activating `.venv`:
+  - Confirm `which python` points to `.venv/bin/python`.
+  - Confirm packages installed: `pip show <package>`.
+
+- OpenAI or API key errors:
+  - Confirm `.env` contains `OPENAI_API_KEY` and the process loads it (some projects require `python-dotenv`).
+  - You can also export it directly for a single run:
+
+```bash
+export OPENAI_API_KEY="sk-..."
+python -m src.main
+```
+
+- If imports fail because modules are under `src/`, prefer `python -m src.main` or set `PYTHONPATH`:
+
+```bash
+export PYTHONPATH="$PWD/src:$PYTHONPATH"
+python -m src.main
+```
+
+## Contributing
+
+- Open an issue for bugs or feature requests.
+- For PRs, keep changes focused and add tests where applicable.
+
+## Further improvements (optional)
+
+- Add a `.env.example` file listing required environment variables without secrets.
+- Add `requirements-dev.txt` for developer tooling (linters/tests).
+- Add a minimal `dev-README.md` describing editor/IDE setup and common tasks.
+
+---
+
+If you'd like, I can also create a `.env.example` and a short `dev-README.md` in this repo—tell me which and I'll add them.
+## PitchPanda
+
 Small utilities for working with pitch PDFs.
 
 This README explains, step-by-step, how to install and run the project from
