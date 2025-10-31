@@ -1,4 +1,265 @@
-# PitchPanda
+## PitchPanda
+
+Small utilities for working with pitch PDFs.
+
+This README explains, step-by-step, how to install and run the project from
+scratch (clone -> venv -> install -> .env -> run), how to manage dependencies
+(`pip freeze`), and other useful tips for development on macOS/Linux (zsh) and
+Windows.
+
+> Note: The repository contains a `src/` directory. Some run instructions
+> below explain how to run code that lives under `src/` (PYTHONPATH or
+> `python -m` usage).
+
+## Quickstart (the shortest path)
+
+1. Clone the repo:
+
+```bash
+# SSH
+git clone git@github.com:william-popmie/PitchPanda.git
+
+# or HTTPS
+git clone https://github.com/william-popmie/PitchPanda.git
+
+cd PitchPanda
+```
+
+2. Create and activate a virtual environment (macOS / Linux / zsh):
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+On Windows (PowerShell):
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+3. Install dependencies:
+
+```bash
+pip install --upgrade pip setuptools
+pip install -r requirements.txt
+```
+
+4. Create your `.env` (if the project uses secrets / API keys):
+
+```bash
+cp .env.example .env   # if .env.example exists
+# then edit .env with your values
+```
+
+5. Run the project (example):
+
+```bash
+python main.py
+# or explicitly use the venv python
+.venv/bin/python main.py
+```
+
+If your code lives under `src/` (module layout), you may need to either set
+`PYTHONPATH` or run as a module (see "Running code in `src/`" section).
+
+---
+
+## Detailed instructions and explanation
+
+### 1) Cloning and branches
+
+- Clone as shown above. If the repo uses branches, checkout the branch you
+	want:
+
+```bash
+git checkout william/langgraph-test
+```
+
+### 2) Python versions and `pyenv`
+
+- Recommended Python versions: 3.10 — 3.13.
+- If you need multiple Python versions, `pyenv` is a convenient manager.
+	Example:
+
+```bash
+pyenv install 3.11.6
+pyenv local 3.11.6
+```
+
+### 3) Virtual environment best practices
+
+- Use a per-project virtualenv: `.venv/` is conventional and already
+	included in `.gitignore`.
+- Always activate the venv before installing or running code.
+
+Checks to confirm you are using the venv:
+
+```bash
+which python   # should point into .venv/bin/python
+python --version
+pip --version  # shows which python pip belongs to
+```
+
+### 4) Installing dependencies
+
+- Prefer installing from `requirements.txt` for reproducible installs:
+
+```bash
+pip install -r requirements.txt
+```
+
+- If you get `ModuleNotFoundError` for a package (for example `prompts`):
+
+```bash
+pip show prompts || pip install prompts
+```
+
+- If you are developing and need an editable install for a local package,
+	use `pip install -e .` (if `setup.py` / `pyproject.toml` exists) or
+	install packages one-by-one during development.
+
+### 5) .env and secrets
+
+- Keep secrets out of git. Use a `.env` file and ensure it's in
+	`.gitignore` (this repo already ignores `.env`).
+- Create `.env.example` (without secrets) and commit that so other devs know
+	which variables to set.
+
+Example `.env.example` (create this file):
+
+```
+# copy to .env and fill values
+OPENAI_API_KEY=
+OTHER_SERVICE_KEY=
+```
+
+Loading `.env` values in Python:
+
+- Recommended: install `python-dotenv` and call `load_dotenv()` early in the
+	program.
+
+- Alternative: export environment variables in your shell before running:
+
+```bash
+export OPENAI_API_KEY="sk-..."
+python main.py
+```
+
+You can use `direnv` to automatically load `.env` when you cd into the repo.
+
+### 6) Running code in `src/`
+
+This repository uses a `src/` layout. You may need one of the following to
+run code cleanly:
+
+- Run as a module (recommended when using `src/`):
+
+```bash
+# from repo root
+python -m src.main
+# or for graph_main
+python -m src.graph_main
+```
+
+- Set `PYTHONPATH` so imports from `src` resolve:
+
+```bash
+export PYTHONPATH="$PWD/src:$PYTHONPATH"
+python main.py
+```
+
+If imports fail because Python can't find local modules, try running with
+`-m` or setting `PYTHONPATH` as above.
+
+### 7) When and how to run `pip freeze > requirements.txt`
+
+- Run `pip freeze > requirements.txt` after you have installed or upgraded
+	the packages required by the project and verified the project runs.
+- Typical workflow:
+
+```bash
+# install a new dependency
+pip install somepackage
+
+# run tests / manual checks
+
+# freeze current venv packages to requirements.txt
+pip freeze > requirements.txt
+
+# commit
+git add requirements.txt
+git commit -m "update requirements"
+```
+
+Notes:
+- `pip freeze` pins exact versions (good for reproducible installs).
+- If you have dev-only packages installed, consider creating
+	`requirements-dev.txt` or removing dev packages before freezing.
+- For a curated approach, use `pip-tools` (`pip-compile`) to manage
+	top-level deps and generate a lock file.
+
+### 8) Git: stop tracking files that should be ignored
+
+If you accidentally committed `.venv/`, `input/`, `output/` or similar, run:
+
+```bash
+# stop tracking locally but keep files on disk
+git rm -r --cached .venv
+git rm -r --cached input
+git rm -r --cached output
+git commit -m "Stop tracking local venv and generated data"
+```
+
+If sensitive data was committed you must rotate secrets and consider using
+`git filter-repo` to scrub history (this rewrites history—ask if you need
+help).
+
+### 9) Troubleshooting common issues
+
+- ModuleNotFoundError even after venv activation
+	- Confirm `which python` and `pip --version` show the `.venv` paths.
+	- Confirm the package is installed in that venv: `pip show <package>`.
+
+- `python: can't open file 'main'` or similar
+	- You ran `python main` instead of `python main.py` or you're in the
+		wrong working directory. Use `python main.py` from the repo root or
+		specify the full path.
+
+- Imports failing because modules are in `src/`
+	- Use `python -m src.main` or set `PYTHONPATH` to include `./src`.
+
+### 10) Recommended developer workflow
+
+1. Create and activate `.venv`.
+2. Install `requirements.txt`.
+3. Add new dependency via `pip install` while venv is active.
+4. Run tests / smoke tests.
+5. Freeze: `pip freeze > requirements.txt` if you want to pin exact
+	 environment versions.
+6. Commit code and `requirements.txt`.
+
+### 11) Optional: create helpful helper files
+
+I can create these for you on request:
+
+- `.env.example` — lists environment variables needed (no secrets).
+- `requirements-dev.txt` — dev-only packages (linters, test runners).
+- `dev-README.md` — short editor/IDE setup notes (VS Code interpreter
+	configuration, launch tasks).
+
+---
+
+If you'd like, I will:
+
+- Add a `.env.example` file populated with likely keys (OPENAI_API_KEY, ...)
+- Create a pinned `requirements.txt` from my environment (or run it in your
+	venv if you want exact local pins)
+- Add a short `dev-README.md` describing how to configure VS Code to use
+	`.venv`
+
+Tell me which of those you'd like and I'll add them.
 
 Small utilities for working with pitch PDFs.
 
