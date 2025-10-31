@@ -112,11 +112,11 @@ def render_markdown(name: str, url: str, a: Analysis) -> str:
 ## Active Locations
 {_render_locations(a.active_locations)}
 
-## Competition (Copy-paste one-liners)
-{clipboard_block}
-
 ## Competition (Structured)
 {comp_section}
+
+## Competition (Copy-paste one-liners)
+{clipboard_block}
 
 ## Sources
 {chr(10).join(f"- {s}" for s in a.sources)}
