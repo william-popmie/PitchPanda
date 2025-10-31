@@ -10,9 +10,11 @@ from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import StateGraph, END
 
 from .prompts import prompt
-from .schemas import Analysis
 from .utils import fetch_website_text, slugify, ensure_dir
 from .renderer import render_markdown
+from .prompts_competition import COMP_PROMPT
+from .schemas import Analysis, Competitor
+
 
 # ---------- Config ----------
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "output")
@@ -86,17 +88,61 @@ def write_node(state: AnalysisState) -> AnalysisState:
     print(f"✅ Wrote {outpath}")
     return state
 
+def competition_node(state: AnalysisState) -> AnalysisState:
+    """Use the validated Analysis (problem/solution/etc.) to propose competitors."""
+    chain = COMP_PROMPT | llm | parser
+
+    a = Analysis(**state.result_json)
+    payload = {
+        "startup_name": state.startup_name,
+        "startup_url": state.startup_url,
+        "problem_general": a.problem.general,
+        "problem_example": a.problem.example,
+        "solution_what": a.solution.what_it_is,
+        "solution_how": a.solution.how_it_works,
+        "solution_example": a.solution.example,
+        "product_type": a.product_type,
+        "sector": a.sector,
+        "subsector": a.subsector,
+        "active_locations": ", ".join(a.active_locations) if a.active_locations else "[]",
+    }
+
+    raw = chain.invoke(payload)
+    # raw should be {"competition": [ ... ]}; be defensive
+    comp_list = raw.get("competition", []) if isinstance(raw, dict) else []
+    # Coerce each item via pydantic (drops bad fields, ensures lists exist)
+    clean_comp = []
+    for item in comp_list:
+        try:
+            clean_comp.append(Competitor(**item).model_dump())
+        except Exception:
+            continue
+
+    # Write back into the Analysis blob -> state
+    a.competition = [Competitor(**c) for c in clean_comp]
+    state.result_json = a.model_dump()
+    return state
+
+
 # ---------- Build Graph ----------
 def build_graph():
     builder = StateGraph(AnalysisState)
     builder.add_node("fetch", fetch_node)
     builder.add_node("analyze", analyze_node)
     builder.add_node("validate", validate_node)
+
+    # ✅ NEW
+    builder.add_node("competition", competition_node)
+
     builder.add_node("write", write_node)
     builder.set_entry_point("fetch")
     builder.add_edge("fetch", "analyze")
     builder.add_edge("analyze", "validate")
-    builder.add_edge("validate", "write")
+
+    # ✅ NEW edge
+    builder.add_edge("validate", "competition")
+
+    builder.add_edge("competition", "write")
     builder.add_edge("write", END)
     return builder.compile()
 
