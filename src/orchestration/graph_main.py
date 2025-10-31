@@ -9,16 +9,16 @@ from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import StateGraph, END
 
-from .prompts import prompt
-from .utils import fetch_website_text, slugify, ensure_dir
-from .renderer import render_markdown
-from .prompts_competition import COMP_PROMPT
-from .schemas import Analysis, Competitor
+from ..prompts.prompts_problem_solution import prompt
+from ..core.utils import fetch_website_text, slugify, ensure_dir
+from ..core.renderer import render_markdown
+from ..prompts.prompts_competition import COMP_PROMPT
+from ..core.schemas import Analysis, Competitor
 
 
 # ---------- Config ----------
-OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "output")
-INPUT_CSV  = os.path.join(os.path.dirname(__file__), "..", "input", "pitches.csv")
+OUTPUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "output"))
+INPUT_CSV  = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "input", "pitches.csv"))
 
 # ---------- State ----------
 class AnalysisState(BaseModel):

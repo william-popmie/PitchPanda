@@ -6,11 +6,13 @@ from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import StateGraph, END
 
-from prompts import prompt
-from utils import fetch_website_text, slugify
+from .prompts.prompts_problem_solution import prompt
+from .core.utils import fetch_website_text, slugify
 
 load_dotenv()
+
 print("[debug] Current working directory:", os.getcwd())
+
 # Print whether API key(s) are present (don't print the key itself)
 has_pitch_key = bool(os.getenv("PITCH_PANDA_API_KEY"))
 has_openai_key = bool(os.getenv("OPENAI_API_KEY"))
@@ -41,7 +43,8 @@ def analyze_node(state: AnalysisState) -> AnalysisState:
 
 def write_node(state: AnalysisState) -> AnalysisState:
     # Simple writer: you can reuse the render_markdown from Option A
-    from src.main import Analysis, render_markdown  # reuse schema & renderer
+    from .core.schemas import Analysis
+    from .core.renderer import render_markdown
     a = Analysis(**state.result_json)
     md = render_markdown(state.startup_name, state.startup_url, a)
     os.makedirs("output", exist_ok=True)
