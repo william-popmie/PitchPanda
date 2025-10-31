@@ -16,4 +16,10 @@ class Analysis(BaseModel):
     product_type: str
     sector: str
     subsector: str
+    
+    active_locations: List[str] = Field(
+        default_factory=list,
+        description="Countries/regions/cities where the company is active (operational coverage or offices)."
+    )
+
     sources: List[str]

@@ -8,6 +8,7 @@ You are an AI analyst. For the given startup name and website, identify and clea
 2) The solution it provides
 3) The product type (website, SaaS, platform, app, service, hardware, marketplace, API, etc.)
 4) The sector (broad) and subsector (specific)
+5) **Active locations** (countries/regions/cities where the company currently operates or has offices)
 
 Startup:
 - Name: {startup_name}
@@ -38,13 +39,15 @@ Return JSON ONLY with this schema:
   "product_type": "SaaS | App | Website | Service | Hardware | Marketplace | API | Platform | Other",
   "sector": "Broad industry (e.g., Fintech, Healthcare, Energy, Education, RetailTech, Logistics, Cybersecurity, etc.)",
   "subsector": "Specific niche (e.g., Payments, Telemedicine, Battery Tech, Inventory Optimization, Last-mile Delivery, Identity, etc.)",
+  "active_locations": ["Array of distinct places where the company is active (e.g., 'Belgium', 'Benelux', 'London, UK', 'North America'). Use evidence; if unknown, return []."],
   "sources": ["List of source URLs used or inferred from (include homepage by default)"]
 }}
 
 ### STYLE GUIDE
 - Be precise and concrete; interpret marketing fluff into clear business/user terms.
 - Prefer specific mechanisms over generic buzzwords.
-- If information is missing, say "Unknown" rather than guessing.
+- For **active_locations**, extract from the site (e.g., footer offices, 'Careers/Locations', 'Where we operate', 'Serving X markets'). Include countries/regions/cities; deduplicate. If unclear, return [].
+- If information is missing, say "Unknown" for strings; use [] for arrays.
 
 ### EXAMPLES (style and depth)
 
@@ -57,6 +60,9 @@ Solution example:
 "Provide a cloud inventory SaaS that ingests POS data and auto-reorders based on AI forecasts."
 Concrete example:
 "On Thursday nights, it places supplier orders for items predicted to sell out by Saturday, keeping shelves full and increasing weekend revenue."
+
+Active locations example:
+["Belgium", "Netherlands", "Germany (DACH)", "London, UK"]
 
 Now produce the JSON.
 """

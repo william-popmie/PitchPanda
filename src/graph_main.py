@@ -47,31 +47,34 @@ def analyze_node(state: AnalysisState) -> AnalysisState:
 def validate_node(state: AnalysisState) -> AnalysisState:
     """
     Convert raw dict to our Pydantic Analysis model, do minimal corrections.
-    Ensures homepage is included in sources.
+    Ensures homepage is included in sources and active_locations is a list.
     """
-    # 1) coerce into Analysis (raises ValidationError if malformed)
     try:
         analysis = Analysis(**state.result_json)
-    except ValidationError as e:
-        # If the model returned malformed JSON, try a minimal fallback shape.
-        # (Keeps pipeline from crashing; you can harden this later.)
+    except ValidationError:
         minimal = {
             "problem": {"general": "Unknown", "example": "Unknown"},
             "solution": {"what_it_is": "Unknown", "how_it_works": "Unknown", "example": "Unknown"},
             "product_type": "Unknown",
             "sector": "Unknown",
             "subsector": "Unknown",
+            "active_locations": [],            # ✅ NEW default
             "sources": [state.startup_url]
         }
         analysis = Analysis(**minimal)
 
-    # 2) Ensure homepage is in sources (dedupe)
+    # Ensure homepage is in sources (dedupe)
     srcs = list(dict.fromkeys(list(analysis.sources or []) + [state.startup_url]))
     analysis.sources = srcs
 
-    # 3) Write back to state as dict
+    # Ensure active_locations is a list (and clean strings)
+    if not isinstance(analysis.active_locations, list):
+        analysis.active_locations = []
+    analysis.active_locations = [str(x).strip() for x in analysis.active_locations if str(x).strip()]
+
     state.result_json = analysis.model_dump()
     return state
+
 
 def write_node(state: AnalysisState) -> AnalysisState:
     ensure_dir(OUTPUT_DIR)
