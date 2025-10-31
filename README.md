@@ -29,6 +29,9 @@ git clone https://github.com/william-popmie/PitchPanda.git
 
 cd PitchPanda
 
+# Ensure input/ and output/ directories exist (safe to run if they already do)
+mkdir -p input output
+
 # Create and activate a virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
@@ -54,6 +57,10 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip setuptools
 pip install -r requirements.txt
+
+# Ensure input/ and output/ directories exist (PowerShell)
+New-Item -ItemType Directory -Force .\input | Out-Null
+New-Item -ItemType Directory -Force .\output | Out-Null
 
 # Create .env (PowerShell)
 @"
