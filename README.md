@@ -29,9 +29,10 @@ src/
     └── prompts.py    # Analysis prompts
 ```
 
-**Two main workflows:**
-1. **Web Analysis** (`src/web_analysis/`) - Analyzes startup websites from CSV to extract problem/solution, market positioning, and competitive landscape
-2. **Deck Analysis** (`src/deck_analysis/`) - Analyzes pitch deck PDFs with GPT-4 Vision to extract insights about market, team, product, and metrics
+**Three main workflows:**
+1. **Complete Analysis** (`src/main.py`) - **[RECOMMENDED]** Orchestrates both web and deck analysis for all companies in CSV
+2. **Web Analysis** (`src/web_analysis/`) - Analyzes startup websites from CSV to extract problem/solution, market positioning, and competitive landscape
+3. **Deck Analysis** (`src/deck_analysis/`) - Analyzes pitch deck PDFs with GPT-4 Vision to extract insights about market, team, product, and metrics
 
 ## Quick Setup (one-shot, CLI copy/paste)
 
@@ -101,7 +102,32 @@ After creation, open `.env` in a text editor and replace the placeholder with yo
 
 From the repository root with the virtualenv active you can run the main entrypoints:
 
-### Website Analysis (from CSV)
+### Complete Analysis (RECOMMENDED)
+```bash
+# Analyzes all companies from input/pitches.csv
+# - Runs web analysis on each company's URL
+# - Runs deck analysis on matching PDFs in input/decks/
+# - Creates a folder per company in output/ with both analyses
+python -m src.main
+
+# Or with a custom CSV path
+python -m src.main path/to/your/pitches.csv
+```
+
+**Output structure:**
+```
+output/
+├── chartera/
+│   ├── web_analysis.md
+│   └── deck_analysis.md
+└── supercity-ai/
+    ├── web_analysis.md
+    └── deck_analysis.md
+```
+
+See [MAIN_USAGE.md](MAIN_USAGE.md) for detailed documentation.
+
+### Website Analysis Only (from CSV)
 ```bash
 # Analyzes startups from input/pitches.csv
 python -m src.web_analysis.main
@@ -110,7 +136,7 @@ python -m src.web_analysis.main
 python -m src.web_analysis.main path/to/your/startups.csv
 ```
 
-### Pitch Deck Analysis (PDF)
+### Pitch Deck Analysis Only (PDF)
 ```bash
 # Analyze a specific pitch deck PDF
 python -m src.deck_analysis.main input/decks/your_pitch.pdf
@@ -125,7 +151,28 @@ Notes:
 
 ## Example: quick smoke test
 
-### Website Analysis
+### Complete Analysis (Both Web + Deck)
+1. Ensure `.venv` is active.
+2. Ensure `.env` contains a valid `OPENAI_API_KEY`.
+3. Ensure `brew install poppler` is installed (macOS).
+4. Add startup URLs to `input/pitches.csv`:
+   ```csv
+   startup_name,startup_url
+   Chartera,https://www.chartera.io/
+   Supercity AI,https://www.supercity.ai/
+   ```
+5. Add matching PDF files to `input/decks/`:
+   - `chartera.pdf`
+   - `supercity-ai.pdf`
+6. Run the complete analysis:
+   ```bash
+   python -m src.main
+   ```
+7. Check `output/chartera/` and `output/supercity-ai/` for:
+   - `web_analysis.md`
+   - `deck_analysis.md`
+
+### Website Analysis Only
 1. Ensure `.venv` is active.
 2. Ensure `.env` contains a valid `OPENAI_API_KEY`.
 3. Add startup URLs to `input/pitches.csv`:
@@ -139,7 +186,7 @@ Notes:
    ```
 5. Check `output/*.md` for generated analyses.
 
-### Pitch Deck Analysis
+### Pitch Deck Analysis Only
 1. Ensure `.venv` is active and `brew install poppler` is installed.
 2. Ensure `.env` contains a valid `OPENAI_API_KEY`.
 3. Place your pitch deck PDF in `input/decks/`.
