@@ -1,96 +1,133 @@
 # Metric Extraction Guidelines
 
-## Philosophy: Facts Over Persuasion
+## Philosophy: Capture All Numbers with Confidence Levels
 
-This analysis tool extracts **EXPLICIT, LABELED FACTS ONLY**. It does not infer, assume, or be persuaded by the pitch deck's claims.
+This analysis tool extracts **ALL METRICS AND NUMBERS** from pitch decks, marking each with a confidence level to indicate how explicitly it was labeled.
 
-## ✅ What Gets Extracted as Facts
+### Key Principles:
+1. **Extract everything** - Don't skip numbers even if vaguely labeled
+2. **Mark confidence** - High/Medium/Low based on labeling clarity
+3. **Add notes** - Flag unrealistic claims or uncertainty
+4. **Go into detail** - Separate Seed/Series A/B/C, TAM/SAM/SOM, etc.
+5. **Stay neutral** - Present facts, don't be persuaded
 
-### Explicitly Labeled Metrics
+## ✅ Confidence Levels
 
-| Category | Valid Examples | Invalid Examples |
-|----------|---------------|------------------|
-| **Funding** | "Seed Funding: $1.5M"<br>"Series A: $5M"<br>"Total Raised: $2M" | "Raised $1.5M" (no stage)<br>"Well-funded" |
-| **MRR/ARR** | "MRR: $50K"<br>"ARR: $600K" | "Making $50K/month"<br>"Revenue growing" |
-| **Users** | "10,000 Active Users"<br>"500 Paying Customers" | "Thousands of users"<br>"Growing user base" |
-| **Market Size** | "TAM: $5B"<br>"SAM: $500M"<br>"SOM: $50M" | "Large market"<br>"Billion dollar opportunity" |
-| **LOIs** | "3 LOIs"<br>"LOI Total Value: $750K" | "Multiple LOIs"<br>"Strong pipeline" |
-| **Growth** | "MoM Growth: 15%"<br>"YoY Growth: 200%" | "Rapid growth"<br>"Hockey stick" |
-| **Churn** | "Churn Rate: 2%"<br>"Monthly Churn: 1.5%" | "Low churn"<br>"Sticky product" |
-| **Unit Economics** | "LTV: $5,000"<br>"CAC: $500"<br>"LTV/CAC: 10x" | "Great unit economics" |
+### ⭐⭐⭐ High Confidence (Explicitly Labeled)
+Metrics with clear, unambiguous labels:
+- "Seed Funding: $1.5M" ✅
+- "MRR: $25K" ✅
+- "TAM: $10B" ✅
+- "Churn Rate: 2%" ✅
+- "LTV/CAC: 10x" ✅
+
+### ⭐⭐ Medium Confidence (Inferred but Reasonable)
+Metrics that can be reasonably inferred from context:
+- "$1.5M raised in 2024" → Likely funding, mark as "Funding (stage uncertain)"
+- "$25K monthly revenue" → Probably MRR, note "Not explicitly labeled as MRR"
+- "10B market" → Likely TAM, note "TAM/SAM/SOM distinction unclear"
+- "$500/customer acquisition" → Probably CAC, note inference
+
+### ⭐ Low Confidence (Vague/Uncertain)
+Numbers mentioned with unclear context:
+- Chart with unlabeled axes showing numbers
+- "Significant revenue" with nearby figure
+- Timeframes not specified
+- Source of number unclear
 
 ## 🔍 How Different Claims Are Handled
 
-### 1. Explicitly Labeled → Facts
+### 1. Explicitly Labeled → High Confidence
 **Deck says:** "Seed Funding: $1.5M raised in Q1 2024"
 
 **Extracted:**
 ```json
 {
-  "metrics": {
-    "funding": [
-      {
-        "label": "Seed Funding",
-        "value": "$1.5M",
-        "context": "Raised in Q1 2024",
-        "is_projection": false
-      }
-    ]
-  }
+  "label": "Seed Funding",
+  "value": "$1.5M",
+  "context": "Raised in Q1 2024",
+  "is_projection": false,
+  "confidence": "high",
+  "notes": null
 }
 ```
 
-### 2. Unlabeled → Observations
+### 2. Unlabeled but Clear → Medium Confidence
 **Deck says:** "Raised $1.5M last year"
 
 **Extracted:**
 ```json
 {
-  "unlabeled_claims": [
-    "States raised $1.5M but does not specify funding stage (seed, Series A, etc.)"
-  ],
-  "metrics": {
-    "funding": [
-      {
-        "label": "Funding (stage unspecified)",
-        "value": "$1.5M",
-        "context": "Last year",
-        "is_projection": false
-      }
-    ]
-  }
+  "label": "Funding (stage uncertain)",
+  "value": "$1.5M",
+  "context": "Last year",
+  "is_projection": false,
+  "confidence": "medium",
+  "notes": "Funding stage not specified"
 }
 ```
 
-### 3. Vague Claims → Flagged
-**Deck says:** "Significant revenue growth"
+### 3. Vague Context → Low Confidence
+**Deck says:** Chart showing "$2M" without clear labeling
 
 **Extracted:**
 ```json
 {
-  "unlabeled_claims": [
-    "Claims 'significant revenue growth' without specific percentage or timeframe"
-  ]
+  "label": "Revenue (uncertain)",
+  "value": "$2M",
+  "context": "From slide 8 chart",
+  "is_projection": false,
+  "confidence": "low",
+  "notes": "Context unclear - could be revenue, funding, or projection"
 }
 ```
 
-### 4. Projections → Marked
-**Deck says:** "Projected ARR: $2M by EOY 2025"
+### 4. Unrealistic Claims → Noted
+**Deck says:** "Projected Users: 100M by end of 2025" (current: 1,000 users)
 
 **Extracted:**
 ```json
 {
-  "metrics": {
-    "financials": [
-      {
-        "label": "ARR Projection",
-        "value": "$2M",
-        "context": "By end of 2025",
-        "is_projection": true
-      }
-    ]
-  }
+  "label": "Projected Users",
+  "value": "100M",
+  "context": "By end of 2025",
+  "is_projection": true,
+  "confidence": "high",
+  "notes": "Extremely ambitious - 100,000x growth in 1 year seems unrealistic given current 1K users"
 }
+```
+
+### 5. Detailed Breakdown → Separate Entries
+**Deck says:** "Raised $3M: $1M seed (2023), $2M Series A (2024)"
+
+**Extracted:**
+```json
+[
+  {
+    "label": "Seed Funding",
+    "value": "$1M",
+    "context": "2023",
+    "is_projection": false,
+    "confidence": "high",
+    "notes": null
+  },
+  {
+    "label": "Series A",
+    "value": "$2M",
+    "context": "2024",
+    "is_projection": false,
+    "confidence": "high",
+    "notes": null
+  },
+  {
+    "label": "Total Funding Raised",
+    "value": "$3M",
+    "context": "Cumulative",
+    "is_projection": false,
+    "confidence": "high",
+    "notes": null
+  }
+]
 ```
 
 ## 🏢 Special Cases

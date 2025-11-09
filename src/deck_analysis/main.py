@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 from .graph import deck_graph, DeckState
-from .renderer import render_deck_markdown
+from .renderer_updated import render_deck_markdown
 from ..core.utils import ensure_dir
 
 
