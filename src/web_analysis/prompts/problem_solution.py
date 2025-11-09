@@ -1,6 +1,6 @@
 from langchain_core.prompts import ChatPromptTemplate
 
-PROMPT_MD = """### 🧠 Prompt: “Startup Problem & Solution Extraction”
+PROMPT_MD = """### 🧠 Prompt: "Startup Problem & Solution Extraction"
 
 **TASK**
 You are an AI analyst. For the given startup name and website, identify and clearly describe:

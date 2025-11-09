@@ -1,16 +1,21 @@
-# src/renderer.py
+"""Markdown rendering for web analysis results."""
+
 from .schemas import Analysis, Competitor
+
 
 # ---------- helpers ----------
 def _render_locations(locs):
     return "- None specified" if not locs else "\n".join(f"- {x}" for x in locs)
 
+
 def _bullets(items):
     return "- None" if not items else "\n".join(f"- {x}" for x in items)
+
 
 def _truncate(s: str, n: int = 180) -> str:
     s = (s or "").strip()
     return s if len(s) <= n else s[: n - 1].rstrip() + "…"
+
 
 # ---------- one-liner clipboard helpers ----------
 def _one_liner_for_competitor(target_product_type: str, c: Competitor) -> str:
@@ -35,6 +40,7 @@ def _one_liner_for_competitor(target_product_type: str, c: Competitor) -> str:
     geo = ", ".join(c.active_locations) if c.active_locations else "n/a"
     return f"{name}: same problem; {sol_tag}; {_truncate(note)}; geo: {geo}"
 
+
 def render_competition_clipboard(target_product_type: str, competitors: list[Competitor]) -> str:
     if not competitors:
         return "(no competitors found)"
@@ -43,6 +49,7 @@ def render_competition_clipboard(target_product_type: str, competitors: list[Com
         for c in competitors
     ]
     return "\n".join(lines)
+
 
 # ---------- structured competition ----------
 def _render_competitor(c: Competitor) -> str:
@@ -72,6 +79,7 @@ def _render_competitor(c: Competitor) -> str:
 **Sources**
 {srcs}
 """
+
 
 # ---------- main markdown ----------
 def render_markdown(name: str, url: str, a: Analysis) -> str:
