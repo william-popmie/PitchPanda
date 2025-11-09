@@ -7,11 +7,32 @@ This README gives a short overview, a CLI-first setup (so a contributor can copy
 ## Overview
 
 - Purpose: extract, transform, and scaffold pitch content (PDFs, prompts, and output files) to help rapid pitch generation and iteration.
-- Layout: the code lives under `src/`. Orchestration tasks live under `src/orchestration` and prompts live under `src/prompts`.
+- Layout: the code lives under `src/`, organized into two main analysis modules with shared utilities.
 
-**Two main workflows:**
-1. **Website Analysis** (`src/orchestration/graph_main.py`) - Analyzes startup websites from CSV
-2. **Pitch Deck Analysis** (`src/deck_analysis/`) - Analyzes pitch deck PDFs with GPT-4 Vision
+**Project Structure:**
+```
+src/
+├── core/              # Shared utilities (slugify, ensure_dir, etc.)
+├── web_analysis/      # Website analysis workflow
+│   ├── main.py       # Entry point for web analysis
+│   ├── graph.py      # LangGraph workflow
+│   ├── schemas.py    # Data models
+│   ├── renderer.py   # Markdown output
+│   ├── utils.py      # Web-specific utilities
+│   └── prompts/      # Analysis prompts
+└── deck_analysis/    # Pitch deck PDF analysis workflow
+    ├── main.py       # Entry point for deck analysis
+    ├── graph.py      # LangGraph workflow
+    ├── schemas.py    # Data models
+    ├── renderer.py   # Markdown output
+    ├── pdf_utils.py  # PDF processing
+    └── prompts.py    # Analysis prompts
+```
+
+**Three main workflows:**
+1. **Complete Analysis** (`src/main.py`) - **[RECOMMENDED]** Orchestrates both web and deck analysis for all companies in CSV
+2. **Web Analysis** (`src/web_analysis/`) - Analyzes startup websites from CSV to extract problem/solution, market positioning, and competitive landscape
+3. **Deck Analysis** (`src/deck_analysis/`) - Analyzes pitch deck PDFs with GPT-4 Vision to extract insights about market, team, product, and metrics
 
 ## Quick Setup (one-shot, CLI copy/paste)
 
@@ -81,13 +102,41 @@ After creation, open `.env` in a text editor and replace the placeholder with yo
 
 From the repository root with the virtualenv active you can run the main entrypoints:
 
-### Website Analysis (from CSV)
+### Complete Analysis (RECOMMENDED)
 ```bash
-# Analyzes startups from input/pitches.csv
-python -m src.orchestration.graph_main
+# Analyzes all companies from input/pitches.csv
+# - Runs web analysis on each company's URL
+# - Runs deck analysis on matching PDFs in input/decks/
+# - Creates a folder per company in output/ with both analyses
+python -m src.main
+
+# Or with a custom CSV path
+python -m src.main path/to/your/pitches.csv
 ```
 
-### Pitch Deck Analysis (PDF)
+**Output structure:**
+```
+output/
+├── chartera/
+│   ├── web_analysis.md
+│   └── deck_analysis.md
+└── supercity-ai/
+    ├── web_analysis.md
+    └── deck_analysis.md
+```
+
+See [MAIN_USAGE.md](MAIN_USAGE.md) for detailed documentation.
+
+### Website Analysis Only (from CSV)
+```bash
+# Analyzes startups from input/pitches.csv
+python -m src.web_analysis.main
+
+# Or with a custom CSV path
+python -m src.web_analysis.main path/to/your/startups.csv
+```
+
+### Pitch Deck Analysis Only (PDF)
 ```bash
 # Analyze a specific pitch deck PDF
 python -m src.deck_analysis.main input/decks/your_pitch.pdf
@@ -96,19 +145,34 @@ python -m src.deck_analysis.main input/decks/your_pitch.pdf
 python -m src.deck_analysis.main
 ```
 
-### Legacy Simple Runner
-```bash
-# Simpler analysis without competition research
-python -m src.main
-```
-
 Notes:
 - Using `python -m` runs the `src` package as a module so relative imports in `src/` work cleanly.
 - If you prefer direct script runs, ensure your `PYTHONPATH` includes `./src`.
 
 ## Example: quick smoke test
 
-### Website Analysis
+### Complete Analysis (Both Web + Deck)
+1. Ensure `.venv` is active.
+2. Ensure `.env` contains a valid `OPENAI_API_KEY`.
+3. Ensure `brew install poppler` is installed (macOS).
+4. Add startup URLs to `input/pitches.csv`:
+   ```csv
+   startup_name,startup_url
+   Chartera,https://www.chartera.io/
+   Supercity AI,https://www.supercity.ai/
+   ```
+5. Add matching PDF files to `input/decks/`:
+   - `chartera.pdf`
+   - `supercity-ai.pdf`
+6. Run the complete analysis:
+   ```bash
+   python -m src.main
+   ```
+7. Check `output/chartera/` and `output/supercity-ai/` for:
+   - `web_analysis.md`
+   - `deck_analysis.md`
+
+### Website Analysis Only
 1. Ensure `.venv` is active.
 2. Ensure `.env` contains a valid `OPENAI_API_KEY`.
 3. Add startup URLs to `input/pitches.csv`:
@@ -118,11 +182,11 @@ Notes:
    ```
 4. Run the analysis:
    ```bash
-   python -m src.orchestration.graph_main
+   python -m src.web_analysis.main
    ```
 5. Check `output/*.md` for generated analyses.
 
-### Pitch Deck Analysis
+### Pitch Deck Analysis Only
 1. Ensure `.venv` is active and `brew install poppler` is installed.
 2. Ensure `.env` contains a valid `OPENAI_API_KEY`.
 3. Place your pitch deck PDF in `input/decks/`.
@@ -135,15 +199,39 @@ Notes:
 ## Project structure (top-level)
 
 ```
-README.md
-requirements.txt
-input/             # sample input CSVs
-output/            # generated artifacts
-src/
-  main.py
-  core/
-  orchestration/
-  prompts/
+PitchPanda/
+├── README.md
+├── requirements.txt
+├── .env                    # Your API keys (not committed)
+├── input/
+│   ├── pitches.csv        # Startup URLs for web analysis
+│   └── decks/             # PDF pitch decks
+├── output/
+│   ├── *.md               # Web analysis results
+│   └── decks/             # Deck analysis results
+└── src/
+    ├── core/              # Shared utilities
+    │   ├── __init__.py
+    │   └── utils.py
+    ├── web_analysis/      # Website analysis module
+    │   ├── __init__.py
+    │   ├── main.py
+    │   ├── graph.py
+    │   ├── schemas.py
+    │   ├── renderer.py
+    │   ├── utils.py
+    │   └── prompts/
+    │       ├── __init__.py
+    │       ├── problem_solution.py
+    │       └── competition.py
+    └── deck_analysis/     # Pitch deck analysis module
+        ├── __init__.py
+        ├── main.py
+        ├── graph.py
+        ├── schemas.py
+        ├── renderer.py
+        ├── pdf_utils.py
+        └── prompts.py
 ```
 
 ## Troubleshooting
@@ -158,14 +246,14 @@ src/
 
 ```bash
 export OPENAI_API_KEY="sk-..."
-python -m src.main
+python -m src.web_analysis.main
 ```
 
-- If imports fail because modules are under `src/`, prefer `python -m src.main` or set `PYTHONPATH`:
+- If imports fail because modules are under `src/`, prefer `python -m src.web_analysis.main` or set `PYTHONPATH`:
 
 ```bash
 export PYTHONPATH="$PWD/src:$PYTHONPATH"
-python -m src.main
+python -m src.web_analysis.main
 ```
 
 ## Contributing

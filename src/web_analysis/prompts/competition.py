@@ -1,7 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
 
 COMP_PROMPT = ChatPromptTemplate.from_template("""
-You are an AI analyst. Using the target startup’s validated profile below, list 5–10 competing startups
+You are an AI analyst. Using the target startup's validated profile below, list 5–10 competing startups
 that solve the **same or very similar problem** (problem similarity should be near-identical).
 Do not try to convince; **inform only**.
 
@@ -44,10 +44,10 @@ INSTRUCTIONS
 
 GUIDANCE
 - Prioritize companies clearly addressing the **same user pain** and market segment (or adjacent).
-- It’s fine if their **solution differs** (e.g., API vs. full SaaS, B2B vs. B2C) — capture that in "differences".
+- It's fine if their **solution differs** (e.g., API vs. full SaaS, B2B vs. B2C) — capture that in "differences".
 - Keep "similarities" focused on shared **problem/ICP**, tech approach overlaps, or use-cases.
 - Use **evidence-based** websites if you know them; if unknown, leave fields empty or concise ("Unknown").
-- Avoid generic “big tech” unless truly core competitors for the same problem.
+- Avoid generic "big tech" unless truly core competitors for the same problem.
 - Deduplicate by name/domain. Aim for 5–10 entries.
 
 Now return the JSON.
