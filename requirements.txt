@@ -23,6 +23,7 @@ openai==2.6.1
 orjson==3.11.4
 ormsgpack==1.11.0
 packaging==25.0
+pdf2image==1.17.0
 prompts==0.0.1
 pydantic==2.12.3
 pydantic_core==2.41.4

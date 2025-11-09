@@ -9,6 +9,10 @@ This README gives a short overview, a CLI-first setup (so a contributor can copy
 - Purpose: extract, transform, and scaffold pitch content (PDFs, prompts, and output files) to help rapid pitch generation and iteration.
 - Layout: the code lives under `src/`. Orchestration tasks live under `src/orchestration` and prompts live under `src/prompts`.
 
+**Two main workflows:**
+1. **Website Analysis** (`src/orchestration/graph_main.py`) - Analyzes startup websites from CSV
+2. **Pitch Deck Analysis** (`src/deck_analysis/`) - Analyzes pitch deck PDFs with GPT-4 Vision
+
 ## Quick Setup (one-shot, CLI copy/paste)
 
 These commands assume macOS / zsh. They will:
@@ -30,7 +34,7 @@ git clone https://github.com/william-popmie/PitchPanda.git
 cd PitchPanda
 
 # Ensure input/ and output/ directories exist (safe to run if they already do)
-mkdir -p input output
+mkdir -p input output input/decks output/decks
 
 # Create and activate a virtual environment
 python3 -m venv .venv
@@ -39,6 +43,9 @@ source .venv/bin/activate
 # Upgrade pip and install requirements
 pip install --upgrade pip setuptools
 pip install -r requirements.txt
+
+# Install system dependency for PDF processing (macOS)
+brew install poppler
 
 # Create a .env with a placeholder OPENAI_API_KEY so you just edit the value
 cat > .env <<'EOF'
@@ -74,12 +81,25 @@ After creation, open `.env` in a text editor and replace the placeholder with yo
 
 From the repository root with the virtualenv active you can run the main entrypoints:
 
+### Website Analysis (from CSV)
 ```bash
-# Primary entrypoint
-python -m src.main
-
-# Or orchestration graph (alternative entrypoint)
+# Analyzes startups from input/pitches.csv
 python -m src.orchestration.graph_main
+```
+
+### Pitch Deck Analysis (PDF)
+```bash
+# Analyze a specific pitch deck PDF
+python -m src.deck_analysis.main input/decks/your_pitch.pdf
+
+# Or analyze all PDFs in input/decks/
+python -m src.deck_analysis.main
+```
+
+### Legacy Simple Runner
+```bash
+# Simpler analysis without competition research
+python -m src.main
 ```
 
 Notes:
@@ -88,15 +108,29 @@ Notes:
 
 ## Example: quick smoke test
 
+### Website Analysis
 1. Ensure `.venv` is active.
-2. Ensure `.env` contains a valid `OPENAI_API_KEY` (if the project relies on OpenAI calls).
-3. Run the main module:
+2. Ensure `.env` contains a valid `OPENAI_API_KEY`.
+3. Add startup URLs to `input/pitches.csv`:
+   ```csv
+   startup_name,startup_url
+   Chartera,https://www.chartera.io/
+   ```
+4. Run the analysis:
+   ```bash
+   python -m src.orchestration.graph_main
+   ```
+5. Check `output/*.md` for generated analyses.
 
-```bash
-python -m src.main
-```
-
-If the project expects input files, check `input/` for `Pitches.csv` and `output/` for generated files.
+### Pitch Deck Analysis
+1. Ensure `.venv` is active and `brew install poppler` is installed.
+2. Ensure `.env` contains a valid `OPENAI_API_KEY`.
+3. Place your pitch deck PDF in `input/decks/`.
+4. Run the analysis:
+   ```bash
+   python -m src.deck_analysis.main
+   ```
+5. Check `output/decks/*_analysis.md` for results.
 
 ## Project structure (top-level)
 
