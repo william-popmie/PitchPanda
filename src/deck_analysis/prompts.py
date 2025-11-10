@@ -25,7 +25,11 @@ Be concise and focus on the most important information."""
 
 DECK_SUMMARY_PROMPT = """You are analyzing a complete pitch deck. Your role is to extract ALL INFORMATION with appropriate confidence/trustworthiness levels, AND to critically distinguish between FACTS and STORYTELLING.
 
-🚨 CRITICAL INSTRUCTION: CAPTURE AS MUCH INFORMATION AS POSSIBLE - MORE IS BETTER!
+🚨 CRITICAL INSTRUCTIONS:
+1. ANALYZE THE IMAGES PROVIDED - You have vision capabilities, use them!
+2. EXTRACT information from ALL slides shown
+3. CAPTURE AS MUCH INFORMATION AS POSSIBLE - MORE IS BETTER!
+4. RETURN VALID JSON - Your entire response MUST be valid JSON matching the schema below
 
 CORE PRINCIPLES:
 1. EXTRACT ALL NUMBERS - even if labels are vague or missing
