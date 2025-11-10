@@ -356,9 +356,221 @@ def render_deck_markdown(analysis: DeckAnalysis) -> str:
         lines.append("### 📊 Data Quality Assessment")
         lines.append(f"{analysis.data_quality_notes}\n")
     
+    # Unconventional Data
+    if analysis.unconventional_data:
+        lines.append("---\n")
+        lines.append("## 🔮 Unconventional & Additional Data\n")
+        lines.append("*Information that doesn't fit standard categories but provides valuable context.*\n")
+        
+        # Group by category
+        by_category = {}
+        for item in analysis.unconventional_data:
+            cat = item.category.replace('_', ' ').title()
+            if cat not in by_category:
+                by_category[cat] = []
+            by_category[cat].append(item)
+        
+        for category, items in by_category.items():
+            lines.append(f"### {category}")
+            for item in items:
+                trust_icon = {
+                    "explicit": "✅",
+                    "inferred": "🔍",
+                    "vague": "⚠️",
+                    "unverifiable": "❓"
+                }.get(item.trustworthiness, "")
+                
+                lines.append(f"**{trust_icon} [{item.trustworthiness.upper()}] {item.source}**")
+                lines.append(f"> {item.content}")
+                
+                if item.context:
+                    lines.append(f"*Context: {item.context}*")
+                if item.notes:
+                    lines.append(f"*Note: {item.notes}*")
+                lines.append("")
+    
+    # Additional Insights
+    if analysis.additional_insights:
+        lines.append("---\n")
+        lines.append("## 💡 Additional Insights\n")
+        for insight in analysis.additional_insights:
+            conf_icon = {"high": "✅", "medium": "🔍", "low": "⚠️"}.get(insight.confidence, "")
+            lines.append(f"### {conf_icon} {insight.title}")
+            lines.append(f"**Source:** {insight.source} | **Confidence:** {insight.confidence}\n")
+            lines.append(insight.description)
+            if insight.relevance:
+                lines.append(f"\n*Relevance:* {insight.relevance}")
+            if insight.flags:
+                lines.append("\n**Flags:**")
+                for flag in insight.flags:
+                    lines.append(f"- ⚠️ {flag}")
+            lines.append("")
+    
+    # Text-Heavy Sections
+    if analysis.text_heavy_sections:
+        lines.append("---\n")
+        lines.append("## 📄 Detailed Content Sections\n")
+        for section in analysis.text_heavy_sections:
+            trust_icon = {
+                "explicit": "✅",
+                "inferred": "🔍",
+                "vague": "⚠️",
+                "unverifiable": "❓"
+            }.get(section.trustworthiness, "")
+            
+            slides = ", ".join([f"#{n}" for n in section.slide_numbers]) if section.slide_numbers else "Unknown"
+            lines.append(f"### {trust_icon} {section.title}")
+            lines.append(f"**Slides:** {slides} | **Type:** {section.data_type} | **Trust:** {section.trustworthiness}\n")
+            lines.append(section.content)
+            
+            if section.key_takeaways:
+                lines.append("\n**Key Takeaways:**")
+                for takeaway in section.key_takeaways:
+                    lines.append(f"- {takeaway}")
+            
+            if section.notes:
+                lines.append(f"\n*Note: {section.notes}*")
+            lines.append("")
+    
+    # Customer Evidence
+    if analysis.customer_testimonials or analysis.case_studies or analysis.pilot_programs:
+        lines.append("---\n")
+        lines.append("## 🗣️ Customer Evidence & Validation\n")
+        
+        if analysis.customer_testimonials:
+            lines.append("### Customer Testimonials")
+            for testimonial in analysis.customer_testimonials:
+                lines.append(f"- {testimonial}")
+            lines.append("")
+        
+        if analysis.case_studies:
+            lines.append("### Case Studies")
+            for case in analysis.case_studies:
+                lines.append(f"- {case}")
+            lines.append("")
+        
+        if analysis.pilot_programs:
+            lines.append("### Pilot Programs")
+            for pilot in analysis.pilot_programs:
+                lines.append(f"- {pilot}")
+            lines.append("")
+    
+    # Market & Industry Data
+    if analysis.market_insights or analysis.industry_statistics:
+        lines.append("---\n")
+        lines.append("## 📊 Market & Industry Insights\n")
+        
+        if analysis.market_insights:
+            lines.append("### Market Insights")
+            for insight in analysis.market_insights:
+                lines.append(f"- {insight}")
+            lines.append("")
+        
+        if analysis.industry_statistics:
+            lines.append("### Industry Statistics (Third-Party)")
+            for stat in analysis.industry_statistics:
+                lines.append(f"- {stat}")
+            lines.append("")
+    
+    # Go-to-Market Details
+    if analysis.gtm_strategy_details or analysis.marketing_channels or analysis.sales_strategy:
+        lines.append("---\n")
+        lines.append("## 🚀 Go-to-Market Strategy\n")
+        
+        if analysis.gtm_strategy_details:
+            lines.append("### Strategy Overview")
+            lines.append(f"{analysis.gtm_strategy_details}\n")
+        
+        if analysis.marketing_channels:
+            lines.append("### Marketing Channels")
+            for channel in analysis.marketing_channels:
+                lines.append(f"- {channel}")
+            lines.append("")
+        
+        if analysis.sales_strategy:
+            lines.append("### Sales Strategy")
+            lines.append(f"{analysis.sales_strategy}\n")
+    
+    # Technology & Product
+    if analysis.technology_stack or analysis.technical_approach or analysis.product_roadmap or analysis.integration_partners:
+        lines.append("---\n")
+        lines.append("## 🔧 Technology & Product Details\n")
+        
+        if analysis.technology_stack:
+            lines.append("### Technology Stack")
+            for tech in analysis.technology_stack:
+                lines.append(f"- {tech}")
+            lines.append("")
+        
+        if analysis.technical_approach:
+            lines.append("### Technical Approach")
+            lines.append(f"{analysis.technical_approach}\n")
+        
+        if analysis.product_roadmap:
+            lines.append("### Product Roadmap")
+            for item in analysis.product_roadmap:
+                lines.append(f"- {item}")
+            lines.append("")
+        
+        if analysis.integration_partners:
+            lines.append("### Integration Partners")
+            for partner in analysis.integration_partners:
+                lines.append(f"- {partner}")
+            lines.append("")
+    
+    # Risks & Challenges
+    if analysis.risks_acknowledged or analysis.mitigation_strategies:
+        lines.append("---\n")
+        lines.append("## ⚠️ Risks & Mitigation\n")
+        
+        if analysis.risks_acknowledged:
+            lines.append("### Risks Acknowledged")
+            for risk in analysis.risks_acknowledged:
+                lines.append(f"- {risk}")
+            lines.append("")
+        
+        if analysis.mitigation_strategies:
+            lines.append("### Mitigation Strategies")
+            for strategy in analysis.mitigation_strategies:
+                lines.append(f"- {strategy}")
+            lines.append("")
+    
+    # Media & Press
+    if analysis.press_coverage or analysis.thought_leadership:
+        lines.append("---\n")
+        lines.append("## 📰 Media & Press\n")
+        
+        if analysis.press_coverage:
+            lines.append("### Press Coverage")
+            for press in analysis.press_coverage:
+                lines.append(f"- {press}")
+            lines.append("")
+        
+        if analysis.thought_leadership:
+            lines.append("### Thought Leadership")
+            for item in analysis.thought_leadership:
+                lines.append(f"- {item}")
+            lines.append("")
+    
     # Present vs Missing Elements
     lines.append("---\n")
     lines.append("## ✅ Deck Completeness\n")
+    
+    if analysis.deck_quality_assessment:
+        lines.append("### Overall Assessment")
+        lines.append(f"{analysis.deck_quality_assessment}\n")
+    
+    if analysis.notable_strengths:
+        lines.append("### Notable Strengths")
+        for strength in analysis.notable_strengths:
+            lines.append(f"- ✅ {strength}")
+        lines.append("")
+    
+    if analysis.notable_weaknesses:
+        lines.append("### Notable Weaknesses")
+        for weakness in analysis.notable_weaknesses:
+            lines.append(f"- ⚠️ {weakness}")
+        lines.append("")
     
     if analysis.present_elements:
         lines.append("### Present Elements")
@@ -389,6 +601,14 @@ def render_deck_markdown(analysis: DeckAnalysis) -> str:
             
             if slide.visual_elements:
                 lines.append(f"**Visuals:** {slide.visual_elements}")
+            
+            if slide.additional_content:
+                lines.append(f"**Additional Content:** {slide.additional_content}")
+            
+            if slide.data_items:
+                lines.append("**Data Items:**")
+                for item in slide.data_items:
+                    lines.append(f"- {item}")
             
             lines.append("")
     

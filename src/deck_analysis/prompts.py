@@ -23,44 +23,49 @@ Return your analysis in JSON format:
 Be concise and focus on the most important information."""
 
 
-DECK_SUMMARY_PROMPT = """You are analyzing a complete pitch deck. Your role is to extract ALL METRICS AND NUMBERS with appropriate confidence levels, AND to critically distinguish between FACTS and STORYTELLING.
+DECK_SUMMARY_PROMPT = """You are analyzing a complete pitch deck. Your role is to extract ALL INFORMATION with appropriate confidence/trustworthiness levels, AND to critically distinguish between FACTS and STORYTELLING.
 
-CRITICAL RULES:
+🚨 CRITICAL INSTRUCTION: CAPTURE AS MUCH INFORMATION AS POSSIBLE - MORE IS BETTER!
+
+CORE PRINCIPLES:
 1. EXTRACT ALL NUMBERS - even if labels are vague or missing
-2. Mark confidence level for each metric:
-   - "high" = Explicitly labeled (e.g., "Seed Funding: $2M", "MRR: $50K")
-   - "medium" = Inferred from context but reasonable (e.g., "$2M raised" → likely funding)
-   - "low" = Vague or unclear (e.g., "significant revenue" with a number nearby)
-3. Add notes when something seems unrealistic, uncertain, or needs clarification
-4. Distinguish between current facts and projections
-5. GO INTO DETAIL - don't stay high level (e.g., separate seed/series A/B/C, TAM/SAM/SOM)
-6. Present competition AS SHOWN in deck - note that this may be biased
-7. DO NOT be persuasive - be factual and neutral
-8. EXTRACT COMPETITIVE ADVANTAGES: patents (secured/pending), IP, trade secrets, exclusive partnerships, regulatory approvals
-9. EXTRACT AWARDS & GRANTS: government grants, accelerator programs, competition wins, non-dilutive funding
-10. ANALYZE BUSINESS MODEL IN DEPTH: revenue model, pricing, customer acquisition, partnerships, distribution
-11. CRITICALLY ANALYZE PROJECTIONS: separate what's stated as fact vs. aspirational claims
-12. DISTINGUISH FACTS FROM STORYTELLING: What can be verified vs. what's marketing narrative
+2. EXTRACT ALL TEXT CONTENT - customer quotes, case studies, technical details, market insights, EVERYTHING
+3. Mark trustworthiness for each data point:
+   - "explicit" = Clearly stated with evidence
+   - "inferred" = Reasonable interpretation from context
+   - "vague" = Unclear or ambiguous (still include it, just mark as vague)
+   - "unverifiable" = Claim without supporting evidence (include with note)
+4. When information is unconventional or doesn't fit standard categories → capture it in unconventional_data
+5. If unsure where something belongs → include it anyway with notes in brackets
+6. Distinguish between current facts and projections
+7. Present competition AS SHOWN in deck - note that this may be biased
+8. DO NOT filter out information - capture everything and let the reader decide
+9. For vague or uncertain data, ADD IT with clarifying notes like "(source unclear)" or "(claim unverified)"
 
-CONFIDENCE LEVELS:
+TRUSTWORTHINESS LEVELS:
 
-**High Confidence** (explicitly labeled):
-- "Seed Funding: $1.5M" ✅
-- "MRR: $25K" ✅
-- "TAM: $10B" ✅
-- "Churn Rate: 2%" ✅
+**Explicit** (clearly stated with evidence):
+- "Seed Funding: $1.5M from Acme Ventures" ✅
+- "MRR: $25K as of Oct 2024" ✅
+- Customer quote with name and company ✅
+- Patent number with filing date ✅
 
-**Medium Confidence** (inferred but reasonable):
-- "Raised $1.5M in 2024" → Infer as funding, note stage uncertain
-- "$25K monthly revenue" → Likely MRR, but not explicitly stated
-- "10B market" → Likely TAM, but TAM/SAM/SOM unclear
+**Inferred** (reasonable interpretation):
+- "Raised $1.5M in 2024" → Likely funding (inferred stage)
+- "$25K monthly revenue" → Likely MRR (not explicitly labeled)
+- Chart showing growth → Infer metrics (note: "inferred from chart")
 
-**Low Confidence** (vague, needs context):
-- "Significant traction" with nearby numbers
-- Unlabeled chart axes
-- Unclear timeframes
+**Vague** (unclear but potentially useful):
+- "Significant traction" with nearby numbers → (note: "label unclear")
+- Unlabeled chart axes → (note: "axes not labeled, appears to show revenue")
+- "Major partnership announced" → (note: "partner name not specified")
 
-METRICS TO EXTRACT (capture ALL, mark confidence):
+**Unverifiable** (claim without evidence):
+- "Revolutionary technology" → (note: "marketing claim, no technical detail")
+- "Market-leading solution" → (note: "claim not substantiated")
+- "Proven demand" → (note: "no supporting metrics provided")
+
+COMPREHENSIVE EXTRACTION CATEGORIES:
 
 **Funding (go into DETAILED breakdown):**
 - Pre-Seed, Seed, Series A/B/C/D (separate each round)
@@ -376,6 +381,171 @@ Return JSON in this exact structure:
         "Chart on slide 7 has no axis labels - unclear what is being measured"
     ],
     
+    "unconventional_data": [
+        {
+            "category": "customer_quote",
+            "content": "This product saved us 50 hours per week - Jane Doe, CTO at BigCorp",
+            "source": "Slide 9",
+            "trustworthiness": "explicit",
+            "context": "Testimonial from early customer",
+            "notes": "No verification link or contact provided"
+        },
+        {
+            "category": "technical_detail",
+            "content": "Uses proprietary ML algorithm with 99.7% accuracy on benchmark dataset",
+            "source": "Slide 15, Appendix",
+            "trustworthiness": "inferred",
+            "context": "Technical approach section",
+            "notes": "Benchmark dataset not named, accuracy claim unverified"
+        },
+        {
+            "category": "market_insight",
+            "content": "Industry spending on [category] grew 45% YoY according to Gartner 2024",
+            "source": "Slide 4",
+            "trustworthiness": "explicit",
+            "context": "Market opportunity slide",
+            "notes": "Third-party data cited with source"
+        },
+        {
+            "category": "unusual_metric",
+            "content": "Achieved viral coefficient of 1.8",
+            "source": "Slide 12",
+            "trustworthiness": "vague",
+            "context": "Growth slide",
+            "notes": "No explanation of how calculated or timeframe"
+        }
+    ],
+    
+    "additional_insights": [
+        {
+            "title": "Detailed Case Study - Enterprise Customer A",
+            "description": "Deployed product across 5,000 employees, saw 30% productivity increase in first quarter, measured by internal surveys",
+            "source": "Slides 10-11",
+            "confidence": "medium",
+            "relevance": "Demonstrates enterprise value proposition with quantitative outcomes",
+            "flags": ["Productivity metric is self-reported", "Only one detailed case study shown"]
+        },
+        {
+            "title": "Partnership Economics",
+            "description": "Channel partner agreement provides access to 500 enterprise customers, revenue share is 70/30 split",
+            "source": "Slide 18",
+            "confidence": "high",
+            "relevance": "Shows clear path to enterprise market via partnerships",
+            "flags": []
+        }
+    ],
+    
+    "text_heavy_sections": [
+        {
+            "title": "How It Works - Technical Explanation",
+            "content": "Product uses multi-stage pipeline: (1) Data ingestion via API, (2) Real-time processing with proprietary algorithm, (3) ML-based categorization, (4) Automated workflow triggers. System processes 10M events/day with <100ms latency.",
+            "slide_numbers": [14, 15],
+            "data_type": "technical_explanation",
+            "key_takeaways": [
+                "Clear technical architecture outlined",
+                "Performance metrics specified",
+                "Scalability implied by volume claims"
+            ],
+            "trustworthiness": "inferred",
+            "notes": "Technical details provided but no verification possible from deck alone"
+        },
+        {
+            "title": "Go-to-Market Strategy Details",
+            "content": "Phase 1 (0-6 months): Direct sales to Fortune 500 via warm introductions. Phase 2 (6-12 months): Launch partner program with 5 system integrators. Phase 3 (12-24 months): Self-serve SMB tier with product-led growth motions.",
+            "slide_numbers": [16],
+            "data_type": "strategy",
+            "key_takeaways": [
+                "Phased approach with clear timelines",
+                "Multi-channel strategy",
+                "Enterprise-first, then down-market"
+            ],
+            "trustworthiness": "explicit",
+            "notes": "Well-articulated strategy but execution risk not addressed"
+        }
+    ],
+    
+    "customer_testimonials": [
+        "This tool is a game-changer for our team - CEO, TechCorp (slide 9)",
+        "We've seen 3x improvement in efficiency - Product Manager, StartupCo (slide 9, note: efficiency metric undefined)"
+    ],
+    
+    "case_studies": [
+        "Enterprise A: 5,000 user deployment, 30% productivity increase, 6-month timeline (slides 10-11, note: productivity is self-reported)",
+        "SMB Customer B: Reduced manual work from 40hrs/week to 2hrs/week, 95% cost savings (slide 11, note: impressive but n=1)"
+    ],
+    
+    "pilot_programs": [
+        "10-company pilot program completed with 8/10 converting to paid, avg contract value $50K (slide 13)",
+        "University research collaboration showing 40% improvement in target metric (slide 20, note: university name not disclosed)"
+    ],
+    
+    "market_insights": [
+        "Industry spending on [category] expected to reach $50B by 2027 (Gartner, slide 4)",
+        "Current solutions have 65% customer dissatisfaction rate according to G2 reviews (slide 5)",
+        "Regulatory changes in 2025 will mandate solutions like ours for companies >1000 employees (slide 6, note: regulation not specifically cited)"
+    ],
+    
+    "industry_statistics": [
+        "Gartner: Market growing at 35% CAGR (slide 4)",
+        "McKinsey study: 70% of companies in sector report [problem] as top 3 challenge (slide 3, note: study year not mentioned)"
+    ],
+    
+    "gtm_strategy_details": "Phase 1: Direct sales to Fortune 500 via founder network and warm intros. Phase 2: Partner channel with system integrators. Phase 3: Product-led growth for SMB segment. Initial focus on financial services vertical, then expand to healthcare and tech.",
+    
+    "marketing_channels": [
+        "LinkedIn outbound (primary channel, 15% response rate mentioned on slide 17)",
+        "Industry conferences (3 major events identified)",
+        "Content marketing (blog has 10K monthly visitors per slide 17)",
+        "Partner referrals (expected to drive 40% of leads by Q4 2026)"
+    ],
+    
+    "sales_strategy": "Enterprise: Direct sales with 6-9 month sales cycle, ACV $100K-$500K. Mid-market: Inside sales with 2-3 month cycle, ACV $25K-$75K. SMB: Self-serve with product-led growth, ACV $5K-$15K (slide 16).",
+    
+    "technology_stack": [
+        "React frontend (slide 15)",
+        "Python/Django backend (slide 15)",
+        "PostgreSQL database (slide 15)",
+        "AWS infrastructure (slide 15)",
+        "Proprietary ML models (mentioned but not detailed)"
+    ],
+    
+    "technical_approach": "Multi-layer architecture with API-first design, real-time data processing using proprietary algorithms, ML-based categorization with 99.7% claimed accuracy (unverified), automated workflow engine. Slide 15 has detailed technical diagram.",
+    
+    "product_roadmap": [
+        "Q1 2026: Mobile app launch",
+        "Q2 2026: AI co-pilot feature (described as 'game-changing' - marketing language)",
+        "Q3 2026: Enterprise admin dashboard",
+        "Q4 2026: International expansion to EU markets"
+    ],
+    
+    "integration_partners": [
+        "Salesforce (integration live, slide 18)",
+        "Slack (integration live, slide 18)",
+        "Microsoft Teams (planned Q1 2026, slide 18)",
+        "Zoom (in discussion, slide 18)"
+    ],
+    
+    "risks_acknowledged": [
+        "Market competition intensifying (slide 22)",
+        "Regulatory uncertainty in EU markets (slide 22, note: good they acknowledge this)"
+    ],
+    
+    "mitigation_strategies": [
+        "Building defensible IP moat via patents (3 filed, slide 22)",
+        "Locking in customers with multi-year contracts (slide 22)"
+    ],
+    
+    "press_coverage": [
+        "Featured in TechCrunch article May 2024 (slide 19)",
+        "Forbes '30 Under 30' for CEO (slide 19)",
+        "VentureBeat coverage of product launch (slide 19, no link provided)"
+    ],
+    
+    "thought_leadership": [
+        "CEO spoke at SaaStr conference 2024 (slide 19)",
+        "Published whitepaper with 5,000 downloads (slide 19, note: topic not specified)"
+    ],
+    
     "present_elements": [
         "Problem/Solution slides",
         "Detailed market size analysis (TAM/SAM/SOM)",
@@ -387,31 +557,57 @@ Return JSON in this exact structure:
         "Awards and recognition slide",
         "Detailed business model canvas",
         "Competitive landscape matrix",
-        "Financial projections with assumptions"
+        "Financial projections with assumptions",
+        "Customer case studies and testimonials",
+        "Technical architecture details",
+        "Go-to-market strategy with phases",
+        "Product roadmap",
+        "Risk acknowledgment section"
     ],
     
     "missing_elements": [
-        "Customer testimonials or case studies",
-        "Detailed go-to-market strategy beyond high-level",
-        "Risk factors or challenges section",
-        "Competitive response strategy",
-        "Detailed hiring plan"
+        "Detailed competitive response strategy",
+        "Customer retention/churn data over time",
+        "Detailed hiring plan with roles and timeline",
+        "International expansion costs",
+        "Customer acquisition cost by channel breakdown"
     ],
     
-    "data_quality_notes": "Most metrics are explicitly labeled with high confidence. Funding breakdown is detailed with clear separation of dilutive vs. non-dilutive sources. Some projections lack supporting assumptions. Business model section is comprehensive. IP claims are well-documented with patent numbers. Some marketing claims lack quantitative backing."
+    "data_quality_notes": "Most metrics are explicitly labeled with high confidence. Funding breakdown is detailed with clear separation of dilutive vs. non-dilutive sources. Some projections lack supporting assumptions. Business model section is comprehensive. IP claims are well-documented with patent numbers. Some marketing claims lack quantitative backing. Significant amount of unconventional data captured including technical details, customer quotes, and market insights. Text-heavy sections provide good context but some claims are unverifiable from deck alone.",
+    
+    "deck_quality_assessment": "Comprehensive deck with strong quantitative backing for most claims. Good balance of high-level narrative and detailed data. Technical depth is notable. Some aspirational language but mostly grounded in metrics. Could benefit from more explicit labeling on certain charts.",
+    
+    "notable_strengths": [
+        "Detailed business model breakdown with specific pricing",
+        "Comprehensive technical architecture explanation",
+        "Multiple case studies with quantitative outcomes",
+        "Well-documented IP portfolio with patent numbers",
+        "Realistic acknowledgment of risks and competition",
+        "Clear phased go-to-market strategy"
+    ],
+    
+    "notable_weaknesses": [
+        "Some projections lack detailed supporting assumptions",
+        "Limited discussion of competitive response if competitors catch up",
+        "Customer testimonials lack verification links or contacts",
+        "Some industry statistics cited without specific study references",
+        "Viral coefficient claim needs more explanation of calculation"
+    ]
 }
 
 REMEMBER:
-- Extract ALL numbers, even if uncertain - just mark confidence appropriately
+- Extract ALL information, even unconventional or unusual data
+- Use unconventional_data for anything that doesn't fit standard categories
+- Use additional_insights for interesting findings that provide context
+- Use text_heavy_sections for detailed explanations, methodologies, case studies
+- Mark trustworthiness honestly: explicit, inferred, vague, unverifiable
+- Add clarifying notes in brackets when data seems questionable: "(claim unverified)", "(metric undefined)", "(source not cited)"
+- MORE INFORMATION IS BETTER - don't filter, just label appropriately
 - Go into DETAILED analysis (separate seed/series A/B/C, TAM/SAM/SOM, etc.)
-- EXTRACT IP & COMPETITIVE ADVANTAGES: patents, trade secrets, regulatory approvals
-- EXTRACT AWARDS & GRANTS: especially non-dilutive funding sources
-- ANALYZE BUSINESS MODEL IN DEPTH: pricing, channels, partnerships, expansion strategy
 - CRITICALLY ANALYZE PROJECTIONS vs. CURRENT STATE
 - DISTINGUISH FACTS from STORYTELLING: what's verifiable vs. marketing narrative
-- Add notes when something seems unrealistic or needs clarification
 - Stay neutral and unbiased
-- Be critical but fair in assessing claims vs. evidence"""
+- Be thorough and comprehensive - capture everything visible in the deck"""
 
 
 def create_slide_analysis_message(image_base64: str, slide_number: int) -> list:

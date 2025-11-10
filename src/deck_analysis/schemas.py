@@ -76,12 +76,45 @@ class ProjectionAnalysis(BaseModel):
     flags: List[str] = Field(default_factory=list)  # Red flags or concerns
 
 
+class UnconventionalData(BaseModel):
+    """Captures any unconventional, unusual, or hard-to-categorize information from the deck."""
+    category: str  # e.g., "customer_quote", "case_study", "technical_detail", "market_insight", "unusual_metric", etc.
+    content: str  # The actual information
+    source: str  # Where in deck (e.g., "Slide 7", "Appendix")
+    trustworthiness: str  # "explicit" (clearly stated), "inferred" (reasonable interpretation), "vague" (unclear/ambiguous), "unverifiable" (claim without evidence)
+    context: Optional[str] = None  # Additional context to help reader understand
+    notes: Optional[str] = None  # Any flags, concerns, or clarifications (e.g., "seems inflated", "no supporting data")
+
+
+class AdditionalInsight(BaseModel):
+    """Captures additional interesting information that doesn't fit standard categories."""
+    title: str  # Brief title for this insight
+    description: str  # The actual information
+    source: str  # Where found (slide number, section)
+    confidence: str  # "high", "medium", "low"
+    relevance: Optional[str] = None  # Why this matters or what it indicates
+    flags: List[str] = Field(default_factory=list)  # Any concerns or notes
+
+
+class TextHeavySection(BaseModel):
+    """For slides with lots of text or detailed explanations that don't fit other categories."""
+    title: str  # Section or slide title
+    content: str  # Full text content or key excerpts
+    slide_numbers: List[int] = Field(default_factory=list)  # Where this appears
+    data_type: str  # "explanation", "description", "methodology", "case_study", "testimonial", etc.
+    key_takeaways: List[str] = Field(default_factory=list)  # Main points
+    trustworthiness: str  # How reliable is this information
+    notes: Optional[str] = None
+
+
 class SlideInsight(BaseModel):
     """Analysis of a single slide."""
     slide_number: int
     slide_title: Optional[str] = None
     key_points: List[str] = Field(default_factory=list)
     visual_elements: Optional[str] = None  # Description of charts, images, etc.
+    additional_content: Optional[str] = None  # Any other interesting content on this slide
+    data_items: List[str] = Field(default_factory=list)  # Specific data points or numbers mentioned
     
 
 class DeckAnalysis(BaseModel):
@@ -133,7 +166,45 @@ class DeckAnalysis(BaseModel):
     # Slide-by-slide insights
     slides: List[SlideInsight] = Field(default_factory=list)
     
+    # UNCONVENTIONAL & ADDITIONAL DATA (capture everything interesting)
+    unconventional_data: List[UnconventionalData] = Field(default_factory=list)  # Unusual or hard-to-categorize info
+    additional_insights: List[AdditionalInsight] = Field(default_factory=list)  # Extra interesting findings
+    text_heavy_sections: List[TextHeavySection] = Field(default_factory=list)  # Detailed text content
+    
+    # Customer evidence & validation
+    customer_testimonials: List[str] = Field(default_factory=list)  # Direct quotes or testimonials
+    case_studies: List[str] = Field(default_factory=list)  # Detailed customer case studies
+    pilot_programs: List[str] = Field(default_factory=list)  # Pilot or trial program results
+    
+    # Market & industry insights from deck
+    market_insights: List[str] = Field(default_factory=list)  # Market trends, data points mentioned
+    industry_statistics: List[str] = Field(default_factory=list)  # Third-party stats cited
+    
+    # Go-to-market & strategy details
+    gtm_strategy_details: Optional[str] = None  # Detailed go-to-market approach
+    marketing_channels: List[str] = Field(default_factory=list)  # Specific channels mentioned
+    sales_strategy: Optional[str] = None  # Sales approach details
+    
+    # Technology & product details
+    technology_stack: List[str] = Field(default_factory=list)  # Technologies mentioned
+    technical_approach: Optional[str] = None  # How the product works technically
+    product_roadmap: List[str] = Field(default_factory=list)  # Future product plans
+    integration_partners: List[str] = Field(default_factory=list)  # Technical integrations
+    
+    # Risk & challenges (if mentioned)
+    risks_acknowledged: List[str] = Field(default_factory=list)  # Risks the company acknowledges
+    mitigation_strategies: List[str] = Field(default_factory=list)  # How they plan to address risks
+    
+    # Media & press mentions
+    press_coverage: List[str] = Field(default_factory=list)  # Media mentions, press coverage
+    thought_leadership: List[str] = Field(default_factory=list)  # Speaking engagements, publications
+    
     # Factual assessment
     present_elements: List[str] = Field(default_factory=list)  # What IS in the deck
     missing_elements: List[str] = Field(default_factory=list)  # Standard elements NOT in deck
     data_quality_notes: Optional[str] = None  # Notes on explicit vs vague labeling
+    
+    # Overall assessment notes
+    deck_quality_assessment: Optional[str] = None  # Overall impression of deck quality, completeness
+    notable_strengths: List[str] = Field(default_factory=list)  # What the deck does well
+    notable_weaknesses: List[str] = Field(default_factory=list)  # What's missing or unclear
