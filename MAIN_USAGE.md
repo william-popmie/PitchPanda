@@ -1,153 +1,205 @@
-# PitchPanda Main Orchestrator
+# PitchPanda - Main Pipeline Usage
 
-## Overview
+## Quick Start
 
-The main entry point (`src/main.py`) orchestrates both web analysis and pitch deck analysis for each company listed in `input/pitches.csv`.
-
-## Features
-
-- **Automated Analysis**: Runs both web and deck analysis for each company
-- **Organized Output**: Creates a folder per company in the `output/` directory
-- **Flexible Matching**: Intelligently finds PDF files matching company names
-- **Robust Error Handling**: Continues processing even if one analysis fails
-
-## Setup
-
-### 1. Input CSV Format
-
-The `input/pitches.csv` file should have the following columns:
-
-```csv
-startup_name,startup_url
-Chartera,https://www.chartera.io/
-Supercity AI,https://www.supercity.ai/
-```
-
-### 2. PDF Naming Convention
-
-Place PDF files in `input/decks/` with names matching the company names:
-
-- `chartera.pdf` for "Chartera"
-- `supercity-ai.pdf` for "Supercity AI"
-
-The system uses flexible matching:
-- Exact slug match (e.g., `chartera.pdf`)
-- Case-insensitive match
-- Partial match (company name in filename)
-
-## Usage
-
-### Run All Companies
+Run the complete analysis pipeline on all companies in your CSV:
 
 ```bash
 python -m src.main
 ```
 
-### Use Custom CSV
+This will automatically:
+1. 🌐 **Web Analysis** - Scrape and analyze company websites
+2. 🎯 **Deck Analysis** - Analyze pitch deck PDFs
+3. 🔀 **Merge Analysis** - Combine both into comprehensive overview ⭐
+
+## Complete Pipeline Flow
+
+```
+input/pitches.csv → [Companies]
+                         ↓
+                    Web Analysis
+                         ↓
+                    Deck Analysis  
+                         ↓
+                    Merge Analysis
+                         ↓
+output/company-name/
+├── web_analysis.md      # Web data
+├── deck_analysis.md     # Pitch deck data
+└── merged_analysis.md   # ⭐ COMPREHENSIVE OVERVIEW
+```
+
+## Setup
+
+### 1. Prepare Input Files
+
+**CSV File:** `input/pitches.csv`
+```csv
+startup_name,startup_url
+DeFloria,https://defloria.bio/
+My Town AI,https://mytownai.com/
+```
+
+**PDF Files:** `input/decks/`
+```
+input/decks/
+├── defloria.pdf
+├── my-town-ai.pdf
+└── ...
+```
+
+### 2. Set Environment Variables
+
+Create a `.env` file in the project root:
+```bash
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+### 3. Run the Pipeline
 
 ```bash
-python -m src.main path/to/custom_pitches.csv
+# Run on all companies in pitches.csv
+python -m src.main
+
+# Or specify a custom CSV
+python -m src.main path/to/custom.csv
 ```
 
 ## Output Structure
 
-After running, you'll have the following structure:
+After running, you'll get:
 
 ```
 output/
-├── chartera/
+├── defloria/
+│   ├── web_analysis.md      # Web scraping results
+│   ├── deck_analysis.md     # Pitch deck analysis
+│   └── merged_analysis.md   # ⭐ Complete company overview
+├── my-town-ai/
 │   ├── web_analysis.md
-│   └── deck_analysis.md
-└── supercity-ai/
-    ├── web_analysis.md
-    └── deck_analysis.md
+│   ├── deck_analysis.md
+│   └── merged_analysis.md
+└── ...
 ```
 
-## What It Does
+## What Gets Generated
 
-For each company in the CSV:
+### 1. Web Analysis (`web_analysis.md`)
+- Problem & Solution (with examples)
+- Product Type & Sector
+- Market Size (TAM/SAM/SOM)
+- Competition Analysis
+- Active Locations
 
-1. **Creates Company Folder**: `output/{company-slug}/`
-2. **Web Analysis**: 
-   - Fetches website content
-   - Analyzes problem/solution
-   - Identifies competitors
-   - Saves to `web_analysis.md`
-3. **Deck Analysis**:
-   - Finds matching PDF in `input/decks/`
-   - Converts to images
-   - Analyzes with GPT-4 Vision
-   - Saves to `deck_analysis.md`
+### 2. Deck Analysis (`deck_analysis.md`)
+- Core pitch elements
+- Metrics & numbers
+- Team information
+- Competitive advantages & IP
+- Funding breakdown
+- Projections analysis
+- Facts vs. storytelling
 
-## Error Handling
+### 3. Merged Analysis (`merged_analysis.md`) ⭐
 
-- If no URL is provided, web analysis is skipped
-- If no PDF is found, deck analysis is skipped
-- Individual failures don't stop the batch process
-- Detailed error messages are printed for debugging
+**The comprehensive overview combining everything:**
 
-## Example Output
+- 📋 Company Overview
+- 🎯 Problem & Solution (web examples + deck details)
+- 📊 Market Information (with conflict handling)
+- 💼 Business Model
+- 👥 Complete Team
+- 💰 Financial Data & Traction
+- 🏆 Competitive Landscape
+- 🛡️ Competitive Advantages & IP
+- � Technology Details
+- � Go-to-Market Strategy
+- 🏅 Awards & Recognition
+- 💬 Customer Evidence
+- 💡 Additional Insights
 
-```
-============================================================
-🚀 PitchPanda - Complete Startup Analysis
-============================================================
-📄 Reading from: /path/to/pitches.csv
-📁 Output to: /path/to/output
-============================================================
+**Key Features:**
+- ✅ Source attribution on every data point: `*(pitch deck)* ` `*(web analysis)* ` `*(both)*`
+- ✅ Conflict handling when sources disagree
+- ✅ Clear marking of missing information
+- ✅ Web examples shown first, then pitch deck details
 
-============================================================
-📊 Analyzing: Chartera
-============================================================
-  🌐 Running web analysis...
-  ✅ Web analysis saved to: /path/to/output/chartera/web_analysis.md
-  🎯 Running deck analysis on: chartera.pdf
-  ✅ Deck analysis saved to: /path/to/output/chartera/deck_analysis.md
+## Handling Missing Data
 
-  📁 Results saved to: /path/to/output/chartera
-     ✓ web_analysis.md
-     ✓ deck_analysis.md
+The pipeline gracefully handles missing inputs:
 
-============================================================
-✅ Analysis complete!
-📊 Processed 2 companies
-📁 Results in: /path/to/output
-============================================================
-```
+- **No URL?** → Skips web analysis, continues with deck
+- **No PDF?** → Skips deck analysis, continues with web
+- **Only one source?** → Merge analysis still runs with available data
+- **Both missing?** → Skips that company
 
-## Individual Module Usage
+## Running Individual Pipelines
 
-You can still run individual analyses if needed:
+You can also run pipelines separately:
 
-### Web Analysis Only
 ```bash
+# Web analysis only
 python -m src.web_analysis.main
+
+# Deck analysis only
+python -m src.deck_analysis.main
+
+# Merge analysis only (requires existing analyses)
+python -m src.merge_analysis.main
 ```
 
-### Deck Analysis Only
-```bash
-python -m src.deck_analysis.main input/decks/company.pdf
-```
+## Tips
 
-## Requirements
-
-- Python 3.10+
-- OpenAI API key in `.env`
-- All dependencies from `requirements.txt`
+1. **Start with small batches** - Test with 1-2 companies first
+2. **Check API limits** - The pipeline uses OpenAI API extensively
+3. **PDF naming** - Name PDFs to match company names (e.g., `defloria.pdf` for "DeFloria")
+4. **Review merged_analysis.md** - This is your final comprehensive document ⭐
 
 ## Troubleshooting
 
-### "No PDF found for {company}"
-- Check that the PDF filename matches the company name (slugified)
-- Verify the file is in `input/decks/` directory
-- Check file extension is `.pdf` (lowercase)
+**"Missing input CSV"**
+- Ensure `input/pitches.csv` exists with correct headers
 
-### "Web analysis failed"
-- Verify the URL is accessible
-- Check OpenAI API key is set
-- Review the detailed error traceback
+**"No PDF found"**
+- Check file is in `input/decks/`
+- Verify filename matches company name (slugified)
 
-### "Deck analysis failed"
-- Ensure PDF is valid and not corrupted
-- Check that you have GPT-4 Vision API access
-- Verify sufficient API credits
+**"OpenAI API key error"**
+- Set `OPENAI_API_KEY` in `.env` file or environment
+
+**"No analyses completed"**
+- Check if URL is valid and PDF exists
+- At least one is required per company
+
+## Example Output
+
+After running the pipeline, each company gets a comprehensive merged analysis like:
+
+```markdown
+# DeFloria
+
+## 🎯 Problem & Solution
+
+### Problem
+**General:** The autism community faces a critical shortage of effective 
+therapeutic options... *(web analysis)*
+
+**Example:** A parent of a child with ASD struggles to find medication... 
+*(web analysis)*
+
+**Additional Details:** Irritability associated with Autism Spectrum Disorder 
+(ASD) with limited FDA-approved treatments... *(pitch deck)*
+
+### Solution
+Botanical cannabinoid drug - DeFloria is developing AJA001... *(web analysis)*
+
+**Example:** A child with ASD begins taking AJA001... *(web analysis)*
+
+**Additional Details:** AJA001, a botanical drug product derived from 
+full-spectrum cannabinoid extract... *(pitch deck)*
+```
+
+---
+
+**Ready to go!** Just run `python -m src.main` and let PitchPanda analyze everything! 🐼

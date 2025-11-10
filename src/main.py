@@ -305,6 +305,7 @@ def run_all_companies(csv_path: str = INPUT_CSV):
     print(f"{'='*60}")
     print(f"📄 Reading from: {csv_path}")
     print(f"📁 Output to: {OUTPUT_DIR}")
+    print(f"\n🔄 Pipeline: Web Analysis → Deck Analysis → Merge Analysis")
     print(f"{'='*60}\n")
 
     # Read CSV and process each company
@@ -338,9 +339,14 @@ def run_all_companies(csv_path: str = INPUT_CSV):
             companies_processed += 1
 
     print(f"\n{'='*60}")
-    print(f"✅ Analysis complete!")
+    print(f"✅ Complete Analysis Finished!")
+    print(f"{'='*60}")
     print(f"📊 Processed {companies_processed} companies")
     print(f"📁 Results in: {OUTPUT_DIR}")
+    print(f"\n📄 Generated files per company:")
+    print(f"   • web_analysis.md    - Web scraping & analysis")
+    print(f"   • deck_analysis.md   - Pitch deck analysis")
+    print(f"   • merged_analysis.md - Comprehensive overview ⭐")
     print(f"{'='*60}\n")
 
 

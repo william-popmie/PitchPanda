@@ -30,8 +30,14 @@ class CompanyOverview(BaseModel):
 
 class ProblemSolution(BaseModel):
     """Problem and solution information."""
-    problem: Optional[SourcedInfo] = Field(default=None, description="Problem statement")
-    solution: Optional[SourcedInfo] = Field(default=None, description="Solution overview")
+    problem_web: Optional[str] = Field(default=None, description="Problem statement from web (general)")
+    problem_example_web: Optional[str] = Field(default=None, description="Problem example from web")
+    problem_deck: Optional[str] = Field(default=None, description="Additional problem details from pitch deck")
+    
+    solution_web: Optional[str] = Field(default=None, description="Solution from web (product name, how it works)")
+    solution_example_web: Optional[str] = Field(default=None, description="Solution example from web")
+    solution_deck: Optional[str] = Field(default=None, description="Additional solution details from pitch deck")
+    
     value_proposition: Optional[SourcedInfo] = Field(default=None, description="Value proposition")
     product_type: Optional[SourcedInfo] = Field(default=None, description="Type of product/service")
     how_it_works: Optional[SourcedInfo] = Field(default=None, description="How the solution works")

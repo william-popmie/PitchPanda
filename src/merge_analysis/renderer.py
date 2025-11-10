@@ -108,13 +108,37 @@ def render_markdown(analysis: MergedAnalysis) -> str:
     lines.append("## 🎯 Problem & Solution")
     lines.append("")
     
-    if analysis.problem_solution.problem:
+    # Problem section
+    if analysis.problem_solution.problem_web or analysis.problem_solution.problem_deck:
         lines.append("### Problem")
-        lines.append(render_sourced_info(analysis.problem_solution.problem, ""))
+        
+        if analysis.problem_solution.problem_web:
+            lines.append(f"**General:** {analysis.problem_solution.problem_web} *(web analysis)*")
+            lines.append("")
+        
+        if analysis.problem_solution.problem_example_web:
+            lines.append(f"**Example:** {analysis.problem_solution.problem_example_web} *(web analysis)*")
+            lines.append("")
+        
+        if analysis.problem_solution.problem_deck:
+            lines.append(f"**Additional Details:** {analysis.problem_solution.problem_deck} *(pitch deck)*")
+            lines.append("")
     
-    if analysis.problem_solution.solution:
+    # Solution section
+    if analysis.problem_solution.solution_web or analysis.problem_solution.solution_deck:
         lines.append("### Solution")
-        lines.append(render_sourced_info(analysis.problem_solution.solution, ""))
+        
+        if analysis.problem_solution.solution_web:
+            lines.append(f"{analysis.problem_solution.solution_web} *(web analysis)*")
+            lines.append("")
+        
+        if analysis.problem_solution.solution_example_web:
+            lines.append(f"**Example:** {analysis.problem_solution.solution_example_web} *(web analysis)*")
+            lines.append("")
+        
+        if analysis.problem_solution.solution_deck:
+            lines.append(f"**Additional Details:** {analysis.problem_solution.solution_deck} *(pitch deck)*")
+            lines.append("")
     
     if analysis.problem_solution.value_proposition:
         lines.append("### Value Proposition")

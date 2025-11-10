@@ -95,6 +95,13 @@ Guidelines:
 - For team members: include everyone mentioned in either source
 - For competitors: merge lists from both sources
 - For metrics: preserve both current state and projections
+- **For Problem/Solution**: Extract web analysis problem/solution/examples separately from pitch deck details
+  - problem_web: General problem from web analysis
+  - problem_example_web: Example scenario from web analysis
+  - problem_deck: More specific problem details from pitch deck
+  - solution_web: Product/solution description from web analysis
+  - solution_example_web: Example usage from web analysis
+  - solution_deck: More detailed solution information from pitch deck
 - Be thorough - this is the definitive overview of the company
 
 Extract and structure all available information into the MergedAnalysis schema."""
