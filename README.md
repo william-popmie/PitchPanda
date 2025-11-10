@@ -12,27 +12,33 @@ This README gives a short overview, a CLI-first setup (so a contributor can copy
 **Project Structure:**
 ```
 src/
-├── core/              # Shared utilities (slugify, ensure_dir, etc.)
-├── web_analysis/      # Website analysis workflow
+├── main.py           # ⭐ MAIN PIPELINE - Runs all three stages
+├── core/             # Shared utilities (slugify, ensure_dir, etc.)
+├── web_analysis/     # Stage 1: Website analysis workflow
 │   ├── main.py       # Entry point for web analysis
 │   ├── graph.py      # LangGraph workflow
 │   ├── schemas.py    # Data models
 │   ├── renderer.py   # Markdown output
 │   ├── utils.py      # Web-specific utilities
 │   └── prompts/      # Analysis prompts
-└── deck_analysis/    # Pitch deck PDF analysis workflow
-    ├── main.py       # Entry point for deck analysis
-    ├── graph.py      # LangGraph workflow
-    ├── schemas.py    # Data models
-    ├── renderer.py   # Markdown output
-    ├── pdf_utils.py  # PDF processing
-    └── prompts.py    # Analysis prompts
+├── deck_analysis/    # Stage 2: Pitch deck PDF analysis workflow
+│   ├── main.py       # Entry point for deck analysis
+│   ├── graph.py      # LangGraph workflow
+│   ├── schemas.py    # Data models
+│   ├── renderer.py   # Markdown output
+│   ├── pdf_utils.py  # PDF processing
+│   └── prompts.py    # Analysis prompts
+└── merge_analysis/   # Stage 3: Merge web + deck → comprehensive overview
+    ├── main.py       # Entry point for merge analysis
+    ├── graph.py      # LangGraph merge workflow
+    ├── schemas.py    # Merged data models
+    └── renderer.py   # Comprehensive markdown output
 ```
 
-**Three main workflows:**
-1. **Complete Analysis** (`src/main.py`) - **[RECOMMENDED]** Orchestrates both web and deck analysis for all companies in CSV
-2. **Web Analysis** (`src/web_analysis/`) - Analyzes startup websites from CSV to extract problem/solution, market positioning, and competitive landscape
-3. **Deck Analysis** (`src/deck_analysis/`) - Analyzes pitch deck PDFs with GPT-4 Vision to extract insights about market, team, product, and metrics
+**Three-Stage Pipeline:**
+1. **Web Analysis** - Scrapes and analyzes company websites (problem/solution, market, competition)
+2. **Deck Analysis** - Analyzes pitch deck PDFs with GPT-4 Vision (metrics, team, financials, IP)
+3. **Merge Analysis** ⭐ - Combines both sources into one comprehensive, source-attributed overview
 
 ## Quick Setup (one-shot, CLI copy/paste)
 
