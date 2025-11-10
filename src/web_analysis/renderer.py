@@ -83,6 +83,28 @@ def _render_competitor(c: Competitor) -> str:
 
 # ---------- main markdown ----------
 def render_markdown(name: str, url: str, a: Analysis) -> str:
+    # Market size section
+    if a.market_size:
+        market_section = f"""## Market Size Estimate
+
+**Total Addressable Market (TAM)**
+{a.market_size.tam}
+
+**Serviceable Addressable Market (SAM)**
+{a.market_size.sam}
+
+**Serviceable Obtainable Market (SOM)**
+{a.market_size.som}
+
+**Calculation Methodology**
+{a.market_size.calculation_context}
+
+**Important Note**
+{a.market_size.note}
+"""
+    else:
+        market_section = ""
+
     # Structured competition
     if a.competition:
         comp_section = "\n\n".join(
@@ -120,6 +142,7 @@ def render_markdown(name: str, url: str, a: Analysis) -> str:
 ## Active Locations
 {_render_locations(a.active_locations)}
 
+{market_section}
 ## Competition (Structured)
 {comp_section}
 
