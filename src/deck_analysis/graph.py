@@ -62,13 +62,13 @@ def encode_images_node(state: DeckState) -> dict:
 
 
 def analyze_deck_node(state: DeckState) -> dict:
-    """Analyze the entire deck with GPT-4 Vision."""
+    """Analyze the entire deck with GPT-4 Vision using structured output."""
     print(f"🤖 Analyzing deck with GPT-4 Vision...")
     
     # Create message with all slides
     messages = create_deck_summary_message(state.images_base64)
     
-    # Use JSON mode for more reliable parsing
+    # Fallback to manual JSON parsing (structured output has issues with required metadata fields)
     try:
         response = vision_llm.invoke(
             messages,
@@ -94,6 +94,8 @@ def analyze_deck_node(state: DeckState) -> dict:
         
         analysis_json = json.loads(json_str)
         print(f"  ✓ Successfully parsed JSON response")
+        print(f"✅ Analysis complete")
+        return {"analysis_json": analysis_json}
     except Exception as e:
         print(f"⚠️  JSON parsing failed: {e}")
         print(f"  Response preview: {str(response.content)[:500]}...")
@@ -102,21 +104,62 @@ def analyze_deck_node(state: DeckState) -> dict:
             "problem_statement": str(response.content)[:1000],
             "observations": [f"Analysis parsing failed: {str(e)}"]
         }
-    
-    print(f"✅ Analysis complete")
-    return {"analysis_json": analysis_json}
+        return {"analysis_json": analysis_json}
 
 
 def validate_analysis_node(state: DeckState) -> dict:
     """Validate and structure the analysis."""
     print(f"✔️  Validating analysis...")
     
+    # If we already have a final_analysis from structured output, just return it
+    if state.final_analysis is not None:
+        print(f"✅ Using structured output (no validation needed)")
+        return {"final_analysis": state.final_analysis}
+    
+    import json
+    
+    def deep_fix_types(obj):
+        """Recursively fix type issues in nested structures."""
+        if isinstance(obj, dict):
+            fixed = {}
+            for k, v in obj.items():
+                # Fix None to [] for known list fields
+                if v is None and k in ['investors', 'partnerships', 'distribution_channels', 'assumptions_stated', 
+                                        'supporting_evidence', 'flags', 'key_takeaways', 'key_points', 'data_items', 
+                                        'slide_numbers']:
+                    fixed[k] = []
+                # Fix [] to None for known optional string fields (but NOT for 'notes' which can be either)
+                elif v == [] and k in ['context', 'details', 'date', 'valuation', 'status', 'relevance',
+                                         'sales_strategy', 'technical_approach', 'pricing_structure', 'customer_acquisition',
+                                         'sales_cycle', 'expansion_strategy']:
+                    fixed[k] = None
+                # Fix string representation of dict/list back to actual dict/list
+                elif isinstance(v, str) and v.strip().startswith(('{', '[')):
+                    try:
+                        fixed[k] = json.loads(v.replace("'", '"'))
+                    except:
+                        fixed[k] = v
+                # Recursively fix nested structures
+                elif isinstance(v, dict):
+                    fixed[k] = deep_fix_types(v)
+                elif isinstance(v, list):
+                    fixed[k] = [deep_fix_types(item) if isinstance(item, (dict, list)) else item for item in v]
+                else:
+                    fixed[k] = v
+            return fixed
+        elif isinstance(obj, list):
+            return [deep_fix_types(item) if isinstance(item, (dict, list)) else item for item in obj]
+        return obj
+    
     try:
+        # Deep fix type issues
+        fixed_json = deep_fix_types(state.analysis_json)
+        
         # Create DeckAnalysis object
         analysis = DeckAnalysis(
             deck_name=state.deck_name,
             total_slides=len(state.image_paths),
-            **state.analysis_json
+            **fixed_json
         )
         print(f"✅ Validation successful")
         return {"final_analysis": analysis}
@@ -154,6 +197,27 @@ def validate_analysis_node(state: DeckState) -> dict:
                             salvaged_data[key] = "; ".join(str(v) for v in value)
                         continue
                     
+                    # Fix nested objects with None values in list fields (e.g., FundingDetail.investors)
+                    if isinstance(value, list) and value:
+                        cleaned_list = []
+                        for item in value:
+                            if isinstance(item, dict):
+                                # Fix None values in nested dict fields that expect lists
+                                cleaned_item = {}
+                                for item_key, item_value in item.items():
+                                    if item_value is None and item_key in ['investors', 'partnerships', 'distribution_channels', 'notes', 'assumptions_stated', 'supporting_evidence', 'flags', 'key_takeaways', 'key_points', 'data_items', 'slide_numbers']:
+                                        cleaned_item[item_key] = []
+                                    elif isinstance(item_value, list):
+                                        # Ensure lists don't have None elements
+                                        cleaned_item[item_key] = [v for v in item_value if v is not None]
+                                    else:
+                                        cleaned_item[item_key] = item_value
+                                cleaned_list.append(cleaned_item)
+                            else:
+                                cleaned_list.append(item)
+                        salvaged_data[key] = cleaned_list
+                        continue
+                    
                     salvaged_data[key] = value
                 except Exception as field_error:
                     # Skip problematic fields
@@ -163,28 +227,60 @@ def validate_analysis_node(state: DeckState) -> dict:
         # Add error info to observations
         if "observations" not in salvaged_data:
             salvaged_data["observations"] = []
-        salvaged_data["observations"].append(f"Validation error: {str(e)[:300]}")
+        elif isinstance(salvaged_data["observations"], str):
+            # Convert string to list
+            salvaged_data["observations"] = [salvaged_data["observations"]]
+        
+        if isinstance(salvaged_data["observations"], list):
+            salvaged_data["observations"].append(f"Validation error: {str(e)[:300]}")
         
         if "data_quality_notes" not in salvaged_data:
             salvaged_data["data_quality_notes"] = "Partial data salvaged from failed validation"
         
         try:
             # Try to create analysis with salvaged data
+            print(f"  🔧 Attempting to create analysis with {len(salvaged_data)} salvaged fields...")
             analysis = DeckAnalysis(**salvaged_data)
-            print(f"⚠️  Created analysis with {len(salvaged_data)} salvaged fields")
+            print(f"⚠️  Created analysis with salvaged data")
             return {"final_analysis": analysis}
         except Exception as e2:
-            print(f"❌ Salvage failed: {str(e2)[:200]}")
+            print(f"❌ Salvage failed: {str(e2)[:300]}")
+            print(f"  🔍 Problematic fields - trying to skip them...")
+            
+            # More aggressive salvage - skip any fields that cause validation errors
+            safe_data = {
+                "deck_name": state.deck_name,
+                "total_slides": len(state.image_paths),
+            }
+            
+            # Try each field individually
+            for key, value in salvaged_data.items():
+                if key in ["deck_name", "total_slides"]:
+                    continue
+                try:
+                    test_data = {**safe_data, key: value}
+                    DeckAnalysis(**test_data)
+                    safe_data[key] = value
+                except:
+                    print(f"    ⚠️  Skipping field '{key}' - causes validation error")
+            
             # Create absolute minimal valid analysis
-            analysis = DeckAnalysis(
-                deck_name=state.deck_name,
-                total_slides=len(state.image_paths),
-                problem_statement=state.analysis_json.get("problem_statement", "Analysis could not be completed"),
-                observations=[f"Analysis validation failed: {str(e)[:200]}"],
-                missing_elements=["Full analysis could not be completed - check logs"],
-                data_quality_notes="Validation error occurred - minimal data available"
-            )
-            return {"final_analysis": analysis}
+            try:
+                analysis = DeckAnalysis(**safe_data)
+                print(f"⚠️  Created minimal analysis with {len(safe_data)} safe fields")
+                return {"final_analysis": analysis}
+            except Exception as e3:
+                print(f"❌ Even minimal salvage failed: {str(e3)[:200]}")
+                # Last resort - completely minimal
+                analysis = DeckAnalysis(
+                    deck_name=state.deck_name,
+                    total_slides=len(state.image_paths),
+                    problem_statement=state.analysis_json.get("problem_statement", "Analysis could not be completed"),
+                    observations=[f"Analysis validation failed: {str(e)[:200]}"],
+                    missing_elements=["Full analysis could not be completed - check logs"],
+                    data_quality_notes="Validation error occurred - minimal data available"
+                )
+                return {"final_analysis": analysis}
 
 
 # Build the graph
