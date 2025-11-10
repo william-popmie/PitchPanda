@@ -2,7 +2,7 @@
 Main orchestrator for PitchPanda analysis.
 
 Analyzes both web presence and pitch decks for startups listed in pitches.csv.
-Creates a folder per company with web_analysis.md, deck_analysis.md, and merged_analysis.md.
+Creates a folder per company with web_analysis.md, deck_analysis.md, merged_analysis.md, and evaluation.md.
 
 Usage:
     python -m src.main
@@ -25,6 +25,10 @@ from .deck_analysis.renderer_updated import render_deck_markdown
 from .merge_analysis.graph import merge_graph, MergeState
 from .merge_analysis.renderer import render_markdown as render_merged_markdown
 from .merge_analysis.schemas import MergedAnalysis
+
+from .evaluation.graph import evaluation_graph, EvaluationState
+from .evaluation.renderer import render_evaluation
+from .evaluation.schemas import CompanyEvaluation
 
 from .core.utils import slugify, ensure_dir
 
@@ -233,9 +237,71 @@ def run_merge_analysis(company_name: str, output_dir: str) -> bool:
         return False
 
 
+def run_evaluation(company_name: str, output_dir: str) -> bool:
+    """
+    Run evaluation scoring based on merged analysis.
+    
+    Args:
+        company_name: Name of the company
+        output_dir: Directory containing merged_analysis.md
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        print(f"  📊 Running investment evaluation...")
+        
+        # Check for merged analysis
+        merged_path = os.path.join(output_dir, "merged_analysis.md")
+        
+        if not os.path.exists(merged_path):
+            print(f"  ⚠️  No merged analysis found to evaluate")
+            return False
+        
+        # Create initial state
+        state = EvaluationState(
+            company_name=company_name,
+            merged_analysis_path=merged_path,
+        )
+        
+        # Run the evaluation graph
+        result = evaluation_graph.invoke(state)
+        
+        # Extract the evaluation
+        if isinstance(result, dict):
+            evaluation_data = result.get("evaluation")
+        else:
+            evaluation_data = result.evaluation
+        
+        if not evaluation_data:
+            print("  ❌ Evaluation failed - no result")
+            return False
+        
+        # Convert to schema object
+        evaluation = CompanyEvaluation(**evaluation_data)
+        
+        # Render to markdown
+        md_content = render_evaluation(evaluation)
+        
+        # Save to output directory
+        output_path = os.path.join(output_dir, "evaluation.md")
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(md_content)
+        
+        print(f"  ✅ Evaluation saved to: {output_path}")
+        print(f"  ⭐ Score: {evaluation.overall_score:.1f}/5.0")
+        return True
+        
+    except Exception as e:
+        print(f"  ❌ Evaluation failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
 def analyze_company(company_name: str, company_url: str, csv_path: str = INPUT_CSV):
     """
-    Run both web and deck analysis for a company.
+    Run complete analysis pipeline for a company.
     
     Args:
         company_name: Name of the company
@@ -255,6 +321,7 @@ def analyze_company(company_name: str, company_url: str, csv_path: str = INPUT_C
     web_success = False
     deck_success = False
     merge_success = False
+    eval_success = False
     
     # Run web analysis
     if company_url:
@@ -274,6 +341,10 @@ def analyze_company(company_name: str, company_url: str, csv_path: str = INPUT_C
     if web_success or deck_success:
         merge_success = run_merge_analysis(company_name, company_output_dir)
     
+    # Run evaluation if merge was successful
+    if merge_success:
+        eval_success = run_evaluation(company_name, company_output_dir)
+    
     # Summary
     print(f"\n  📁 Results saved to: {company_output_dir}")
     if web_success:
@@ -282,6 +353,8 @@ def analyze_company(company_name: str, company_url: str, csv_path: str = INPUT_C
         print(f"     ✓ deck_analysis.md")
     if merge_success:
         print(f"     ✓ merged_analysis.md")
+    if eval_success:
+        print(f"     ✓ evaluation.md ⭐")
     
     if not web_success and not deck_success:
         print(f"  ⚠️  No analyses completed for {company_name}")
