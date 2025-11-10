@@ -10,15 +10,9 @@ from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import StateGraph, END
 
-from .prompts import prompt, COMP_PROMPT
+from .prompts import prompt, COMP_PROMPT, MARKET_SIZE_PROMPT
 from .utils import fetch_website_text
-from .renderer import render_markdown
-from .schemas import Analysis, Competitor
-from ..core.utils import slugify, ensure_dir
-
-
-# ---------- Config ----------
-OUTPUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "output"))
+from .schemas import Analysis, Competitor, MarketSize
 
 
 # ---------- State ----------
@@ -121,15 +115,40 @@ def competition_node(state: AnalysisState) -> AnalysisState:
     return state
 
 
-def write_node(state: AnalysisState) -> AnalysisState:
-    """Write analysis results to markdown file."""
-    ensure_dir(OUTPUT_DIR)
-    analysis = Analysis(**state.result_json)
-    md = render_markdown(state.startup_name, state.startup_url, analysis)
-    outpath = os.path.join(OUTPUT_DIR, f"{slugify(state.startup_name)}.md")
-    with open(outpath, "w", encoding="utf-8") as f:
-        f.write(md)
-    print(f"✅ Wrote {outpath}")
+def market_size_node(state: AnalysisState) -> AnalysisState:
+    """Calculate market size estimates (TAM, SAM, SOM) based on the validated Analysis."""
+    chain = MARKET_SIZE_PROMPT | llm | parser
+
+    a = Analysis(**state.result_json)
+    payload = {
+        "startup_name": state.startup_name,
+        "startup_url": state.startup_url,
+        "problem_general": a.problem.general,
+        "problem_example": a.problem.example,
+        "solution_what": a.solution.what_it_is,
+        "solution_how": a.solution.how_it_works,
+        "product_type": a.product_type,
+        "sector": a.sector,
+        "subsector": a.subsector,
+        "active_locations": ", ".join(a.active_locations) if a.active_locations else "Unknown",
+    }
+
+    try:
+        raw = chain.invoke(payload)
+        # raw should be {"tam": ..., "sam": ..., "som": ..., "calculation_context": ..., "note": ...}
+        market_size = MarketSize(**raw)
+        a.market_size = market_size
+    except Exception as e:
+        # If market size calculation fails, create a default/error state
+        a.market_size = MarketSize(
+            tam="Unable to calculate",
+            sam="Unable to calculate",
+            som="Unable to calculate",
+            calculation_context=f"Market size calculation failed: {str(e)}",
+            note="Please validate market size manually using primary research."
+        )
+
+    state.result_json = a.model_dump()
     return state
 
 
@@ -141,14 +160,14 @@ def build_graph():
     builder.add_node("analyze", analyze_node)
     builder.add_node("validate", validate_node)
     builder.add_node("competition", competition_node)
-    builder.add_node("write", write_node)
+    builder.add_node("market_size", market_size_node)
     
     builder.set_entry_point("fetch")
     builder.add_edge("fetch", "analyze")
     builder.add_edge("analyze", "validate")
     builder.add_edge("validate", "competition")
-    builder.add_edge("competition", "write")
-    builder.add_edge("write", END)
+    builder.add_edge("competition", "market_size")
+    builder.add_edge("market_size", END)
     
     return builder.compile()
 
