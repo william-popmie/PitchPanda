@@ -44,6 +44,30 @@ def render_deck_markdown(analysis: DeckAnalysis) -> str:
         lines.append("### 💰 Business Model")
         lines.append(f"{analysis.business_model}\n")
     
+    # Detailed Business Model
+    if analysis.business_model_details:
+        lines.append("### 💼 Business Model Details")
+        bm = analysis.business_model_details
+        if bm.revenue_model:
+            lines.append(f"**Revenue Model:** {bm.revenue_model}")
+        if bm.pricing_structure:
+            lines.append(f"**Pricing:** {bm.pricing_structure}")
+        if bm.customer_acquisition:
+            lines.append(f"**Customer Acquisition:** {bm.customer_acquisition}")
+        if bm.sales_cycle:
+            lines.append(f"**Sales Cycle:** {bm.sales_cycle}")
+        if bm.partnerships:
+            lines.append(f"**Partnerships:** {', '.join(bm.partnerships)}")
+        if bm.distribution_channels:
+            lines.append(f"**Distribution:** {', '.join(bm.distribution_channels)}")
+        if bm.expansion_strategy:
+            lines.append(f"**Expansion Strategy:** {bm.expansion_strategy}")
+        if bm.notes:
+            lines.append("**Additional Notes:**")
+            for note in bm.notes:
+                lines.append(f"- {note}")
+        lines.append("")
+    
     # Metrics Section (ALL numbers with confidence levels)
     if analysis.metrics:
         lines.append("---\n")
@@ -164,6 +188,90 @@ def render_deck_markdown(analysis: DeckAnalysis) -> str:
             lines.append(f"- {name_str}{role_str}{background_str}")
         lines.append("")
     
+    # Competitive Advantages (IP, Patents, etc.)
+    if analysis.competitive_advantages:
+        lines.append("---\n")
+        lines.append("## 🛡️ Competitive Advantages & IP\n")
+        
+        # Group by category
+        categories = {}
+        for adv in analysis.competitive_advantages:
+            cat = adv.category
+            if cat not in categories:
+                categories[cat] = []
+            categories[cat].append(adv)
+        
+        for cat, advs in categories.items():
+            cat_display = cat.replace('_', ' ').title()
+            lines.append(f"### {cat_display}")
+            for adv in advs:
+                status_str = f" (*{adv.status}*)" if adv.status else ""
+                conf_str = "" if adv.confidence == "high" else f" - *confidence: {adv.confidence}*"
+                lines.append(f"- **{adv.description}**{status_str}{conf_str}")
+                if adv.details:
+                    lines.append(f"  - Details: {adv.details}")
+            lines.append("")
+    
+    # Awards and Grants
+    if analysis.awards_and_grants:
+        lines.append("---\n")
+        lines.append("## 🏆 Awards, Grants & Recognition\n")
+        
+        # Separate dilutive and non-dilutive funding
+        non_dilutive = [a for a in analysis.awards_and_grants if a.is_non_dilutive]
+        other_awards = [a for a in analysis.awards_and_grants if not a.is_non_dilutive or a.is_non_dilutive is None]
+        
+        if non_dilutive:
+            lines.append("### 💰 Non-Dilutive Funding")
+            for award in non_dilutive:
+                amount_str = f" - **{award.amount}**" if award.amount else ""
+                year_str = f" ({award.year})" if award.year else ""
+                org_str = f"\n  - From: {award.organization}" if award.organization else ""
+                lines.append(f"- **{award.name}**{amount_str}{year_str}{org_str}")
+            lines.append("")
+        
+        if other_awards:
+            lines.append("### 🎖️ Awards & Recognition")
+            for award in other_awards:
+                amount_str = f" - **{award.amount}**" if award.amount else ""
+                year_str = f" ({award.year})" if award.year else ""
+                org_str = f"\n  - From: {award.organization}" if award.organization else ""
+                lines.append(f"- **{award.name}**{amount_str}{year_str}{org_str}")
+            lines.append("")
+    
+    # Detailed Funding Breakdown
+    if analysis.funding_details:
+        lines.append("---\n")
+        lines.append("## 💵 Detailed Funding Breakdown\n")
+        
+        # Separate by type
+        equity = [f for f in analysis.funding_details if not f.is_non_dilutive]
+        non_dilutive = [f for f in analysis.funding_details if f.is_non_dilutive]
+        
+        if equity:
+            lines.append("### Equity Funding")
+            for fund in equity:
+                date_str = f" ({fund.date})" if fund.date else ""
+                lines.append(f"- **{fund.type.replace('_', ' ').title()}**: {fund.amount}{date_str}")
+                if fund.investors:
+                    lines.append(f"  - Investors: {', '.join(fund.investors)}")
+                if fund.valuation:
+                    lines.append(f"  - Valuation: {fund.valuation}")
+                if fund.notes:
+                    lines.append(f"  - Notes: {fund.notes}")
+            lines.append("")
+        
+        if non_dilutive:
+            lines.append("### Non-Dilutive Funding")
+            for fund in non_dilutive:
+                date_str = f" ({fund.date})" if fund.date else ""
+                lines.append(f"- **{fund.type.replace('_', ' ').title()}**: {fund.amount}{date_str}")
+                if fund.investors:
+                    lines.append(f"  - Source: {', '.join(fund.investors)}")
+                if fund.notes:
+                    lines.append(f"  - Notes: {fund.notes}")
+            lines.append("")
+    
     # Competition
     if analysis.competition_mentioned:
         lines.append("---\n")
@@ -171,6 +279,59 @@ def render_deck_markdown(analysis: DeckAnalysis) -> str:
         lines.append(f"*{analysis.competition_note}*\n")
         for comp in analysis.competition_mentioned:
             lines.append(f"- {comp}")
+        lines.append("")
+    
+    # Projection Analysis
+    if analysis.projection_analysis:
+        lines.append("---\n")
+        lines.append("## 📊 Projection Analysis (Critical Assessment)\n")
+        lines.append("*Critical analysis of projections vs. current state and supporting evidence.*\n")
+        
+        for proj in analysis.projection_analysis:
+            lines.append(f"### {proj.metric_name}")
+            if proj.current_value:
+                lines.append(f"**Current:** {proj.current_value}")
+            lines.append(f"**Projected:** {proj.projected_value}")
+            if proj.timeframe:
+                lines.append(f"**Timeframe:** {proj.timeframe}")
+            
+            if proj.assumptions_stated:
+                lines.append("**Stated Assumptions:**")
+                for assumption in proj.assumptions_stated:
+                    lines.append(f"- {assumption}")
+            
+            if proj.supporting_evidence:
+                lines.append("**Supporting Evidence:**")
+                for evidence in proj.supporting_evidence:
+                    lines.append(f"- {evidence}")
+            
+            if proj.realism_assessment:
+                lines.append(f"**Realism Assessment:** {proj.realism_assessment}")
+            
+            if proj.flags:
+                lines.append("**⚠️ Flags/Concerns:**")
+                for flag in proj.flags:
+                    lines.append(f"- {flag}")
+            
+            lines.append("")
+    
+    # Facts vs Storytelling
+    lines.append("---\n")
+    lines.append("## 🔬 Facts vs. Storytelling\n")
+    lines.append("*Distinguishing verifiable facts from marketing narrative and aspirational claims.*\n")
+    
+    if analysis.facts:
+        lines.append("### ✅ Verifiable Facts")
+        lines.append("*Claims with specific evidence or verification:*")
+        for fact in analysis.facts:
+            lines.append(f"- {fact}")
+        lines.append("")
+    
+    if analysis.storytelling:
+        lines.append("### 📖 Storytelling & Marketing Claims")
+        lines.append("*Narrative elements, aspirational language, or claims without specific evidence:*")
+        for story in analysis.storytelling:
+            lines.append(f"- {story}")
         lines.append("")
     
     # Observations and Unlabeled Claims
