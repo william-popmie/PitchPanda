@@ -53,68 +53,95 @@ def evaluate_company(state: EvaluationState) -> dict:
         raise ValueError("No merged analysis content available to evaluate")
     
     # Create evaluation prompt
-    prompt_template = """You are a venture capital analyst evaluating a startup for potential investment.
+    prompt_template = """You are a CRITICAL venture capital analyst evaluating startups for a high-growth VC fund seeking 3-5x returns and potential unicorns.
 
-Based on the comprehensive company analysis below, evaluate this company on 6 criteria using a 1-5 scale.
+**BE TOUGH**: You're investing millions seeking billion-dollar exits. Most startups will fail. Be objective but demanding.
 
 Company: {company_name}
 
-SCORING CRITERIA (1-5 scale):
+SCORING CRITERIA (1-5 scale) - **VC PERSPECTIVE**:
 
 1. **Team** (1-5)
-   - 1: Lone founder with limited relevant experience
-   - 2: Small team or founder with some relevant experience
-   - 3: Team with decent experience, may have gaps
-   - 4: Strong team with relevant expertise and prior success
-   - 5: Exceptional team with multiple successful exits, deep domain expertise
+   - 1: Solo founder, no relevant experience, or weak team
+   - 2: Small team with limited track record or domain expertise
+   - 3: Competent team with relevant experience but no proven exits
+   - 4: Strong team with domain expertise, prior startup experience, or 1 exit
+   - 5: Exceptional team with multiple successful exits, deep expertise, complementary skills
+   
+   **Red flags**: First-time founders without advisors, missing key roles (tech/business/sales), team imbalances
 
 2. **Technology** (1-5)
-   - 1: Just an idea, no product development yet
-   - 2: Early prototype or MVP stage
-   - 3: Working product with some users/customers
-   - 4: Product in market with proven traction
-   - 5: Market-ready scalable product with strong technical moat
+   - 1: Just an idea or concept, no code/product
+   - 2: Early MVP or prototype, not market-tested
+   - 3: Working product with early users but limited scalability or technical depth
+   - 4: Production product with proven scalability, some technical moat
+   - 5: Market-leading technology with strong IP, proprietary data, or significant technical barriers
+   
+   **Red flags**: Non-proprietary tech, easily replicable, outdated tech stack, technical debt
 
-3. **Market** (1-5)
-   - 1: Very small or unclear market (<$100M TAM)
-   - 2: Small market ($100M-$500M TAM)
-   - 3: Medium market ($500M-$2B TAM)
-   - 4: Large market ($2B-$10B TAM)
-   - 5: Very large market (>$10B TAM) with strong growth
+3. **Market** (1-5) - **CRITICAL FOR VCs**
+   - 1: TAM <$1B (too small for VC scale) or unclear/unproven market
+   - 2: TAM $1-5B (small for venture scale, niche play)
+   - 3: TAM $5-20B (acceptable but needs dominant market share for unicorn status)
+   - 4: TAM $20-50B (large market with clear growth trajectory)
+   - 5: TAM >$50B (massive market with secular tailwinds and rapid growth)
+   
+   **Be ruthless**: Anything under $1B TAM is an automatic concern. We need billion-dollar outcomes. Question inflated TAM calculations.
 
 4. **Value Proposition** (1-5)
-   - 1: Solution doesn't clearly address the problem
-   - 2: Addresses problem but weak fit or unclear differentiation
-   - 3: Good problem-solution fit, some differentiation
-   - 4: Strong problem-solution fit with clear differentiation
-   - 5: Perfect problem-solution fit, unique and compelling value
+   - 1: Weak problem-solution fit, "vitamin" not "painkiller"
+   - 2: Addresses minor pain point, unclear willingness to pay
+   - 3: Solves real problem but competitive or incremental improvement
+   - 4: Clear painkiller with strong differentiation and pricing power
+   - 5: 10x better solution, creates new category, customers desperately need it
+   
+   **Red flags**: "Nice to have" products, unclear ROI, long sales cycles with weak value prop
 
 5. **Competitive Advantage / MOAT** (1-5)
-   - 1: No defensibility, easy to replicate
-   - 2: Weak moat, some barriers but easily overcome
-   - 3: Moderate moat (brand, network effects starting)
-   - 4: Strong moat (IP, exclusive partnerships, significant network effects)
-   - 5: Very strong moat (multiple defensibility layers, hard to replicate)
+   - 1: No moat, commodity product, easily copied
+   - 2: Weak defensibility, first-mover advantage only
+   - 3: Some moat (brand, switching costs) but vulnerable
+   - 4: Strong moat (network effects, data moat, high switching costs, IP)
+   - 5: Multiple compounding moats, near-impossible to replicate (e.g., regulatory, exclusive data, strong network effects)
+   
+   **Critical**: Without a moat, even great execution gets competed away. Look for sustainable advantages.
 
 6. **Social Impact** (1-5)
-   - 1: No meaningful social impact
-   - 2: Minor positive impact in limited scope
-   - 3: Moderate positive impact in specific domain
-   - 4: Significant positive impact, addresses important challenge
-   - 5: Transformative impact, solves critical societal problem
+   - 1: No social impact or potentially negative
+   - 2: Minor positive impact, limited scope
+   - 3: Moderate impact in specific area (sustainability, access, health)
+   - 4: Significant impact addressing important societal challenge
+   - 5: Transformative impact on critical global problem (climate, health, inequality)
+   
+   **Note**: Important for ESG funds but secondary to returns for most VCs
 
-COMPETITOR ANALYSIS:
-- Group competitors by similar characteristics (e.g., "CBD-based therapeutics", "Enterprise SaaS platforms", "Direct competitors")
-- Don't repeat similar text for each competitor - group them intelligently
-- Focus on what makes each group similar/different
+---
 
-FINAL COMMENTS:
-Include interesting observations about:
-- MRR, ARR, or revenue metrics (growth rate, sustainability)
-- Financial projections (realistic? aggressive? concerns?)
-- Unique aspects or red flags
-- Anything unusual, particularly positive, or concerning
-- Risk factors or opportunities
+**GROWTH METRICS - BE CRITICAL**:
+- **MRR/ARR**: Anything <$100K MRR after 2+ years is concerning. $50K MRR after 4 years is a RED FLAG.
+- **Growth rate**: Need >3x YoY. <50% YoY is weak. Flat is failing.
+- **Unit economics**: Need clear path to profitability. CAC payback >24 months is concerning.
+- **Burn rate**: Runway <12 months without clear revenue ramp is risky.
+
+**PROJECTIONS**:
+- Most projections are overly optimistic. Haircut aggressive forecasts by 50-70%.
+- Question assumptions: customer acquisition, pricing, market penetration, competition.
+- Red flag: Hockey stick projections without historical validation.
+
+**COMPETITOR ANALYSIS**:
+- Group competitors intelligently (e.g., "Enterprise SaaS competitors", "Direct B2C rivals", "Indirect alternatives")
+- Don't list features - focus on competitive positioning and defensibility
+- Be honest about threats from well-funded or established players
+
+**FINAL COMMENTS** - Include critical observations:
+- Revenue metrics (MRR, ARR, growth rate) - be specific and critical
+- Financial health (burn rate, runway, unit economics)
+- Red flags (team gaps, market risks, competitive threats, unrealistic projections)
+- Unique strengths (proprietary tech, exclusive partnerships, viral growth)
+- VC fit: Is this a potential unicorn or just a nice lifestyle business?
+- Deal concerns: valuation expectations, dilution, governance
+
+**Remember**: You're protecting LP money and seeking exceptional returns. A "3" is average. Most companies are 2-3. Only truly exceptional companies deserve 4-5.
 
 ---
 
@@ -124,8 +151,8 @@ Include interesting observations about:
 
 ---
 
-Provide your evaluation with scores, reasoning, competitor grouping, and final comments."""
-
+Provide your CRITICAL evaluation with scores, detailed reasoning for each score, competitor grouping, and brutally honest final comments about investment potential.
+"""
     prompt = ChatPromptTemplate.from_template(prompt_template)
     chain = prompt | structured_llm
     
