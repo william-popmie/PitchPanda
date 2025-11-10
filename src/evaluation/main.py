@@ -61,11 +61,13 @@ def evaluate_company_analysis(company_dir: str) -> bool:
     try:
         result = evaluation_graph.invoke(state)
         
-        # Extract the evaluation
+        # Extract the evaluation and merged content
         if isinstance(result, dict):
             evaluation_data = result.get("evaluation")
+            merged_content = result.get("merged_content")
         else:
             evaluation_data = result.evaluation
+            merged_content = result.merged_content
         
         if not evaluation_data:
             print("  ❌ Failed to generate evaluation")
@@ -74,9 +76,9 @@ def evaluate_company_analysis(company_dir: str) -> bool:
         # Convert to schema object
         evaluation = CompanyEvaluation(**evaluation_data)
         
-        # Render to markdown
+        # Render to markdown with merged_content for competitive landscape
         print("  📝 Rendering evaluation...")
-        md_content = render_evaluation(evaluation)
+        md_content = render_evaluation(evaluation, merged_content=merged_content)
         
         # Save to file
         output_path = os.path.join(company_dir, "evaluation.md")

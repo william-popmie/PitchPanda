@@ -1,6 +1,7 @@
 """
 Renderer for company evaluation.
 """
+import re
 from .schemas import CompanyEvaluation, Criterion, CompetitorGroup
 
 
@@ -10,7 +11,22 @@ def render_criterion(criterion: Criterion) -> str:
     return f"**{criterion.name}:** {criterion.score}/5 {stars}\n{criterion.reasoning}\n"
 
 
-def render_evaluation(evaluation: CompanyEvaluation) -> str:
+def extract_competitive_landscape(merged_content: str) -> str:
+    """Extract the competitive landscape section from merged analysis."""
+    if not merged_content:
+        return None
+    
+    # Find the competitive landscape section
+    pattern = r'## 🏆 Competitive Landscape\s*\n(.*?)(?=\n## |\n---\n\n## |\Z)'
+    match = re.search(pattern, merged_content, re.DOTALL)
+    
+    if match:
+        return match.group(1).strip()
+    
+    return None
+
+
+def render_evaluation(evaluation: CompanyEvaluation, merged_content: str = None) -> str:
     """
     Render the evaluation to markdown format.
     
@@ -71,8 +87,18 @@ def render_evaluation(evaluation: CompanyEvaluation) -> str:
     lines.append("---")
     lines.append("")
     
-    # Competitive Landscape
-    if evaluation.competitor_groups:
+    # Competitive Landscape - Use full details from merged_content if available
+    competitive_landscape = extract_competitive_landscape(merged_content) if merged_content else None
+    
+    if competitive_landscape:
+        lines.append("## 🏆 Competitive Landscape")
+        lines.append("")
+        lines.append(competitive_landscape)
+        lines.append("")
+        lines.append("---")
+        lines.append("")
+    elif evaluation.competitor_groups:
+        # Fallback to LLM-generated groups if no merged content available
         lines.append("## 🏆 Competitive Landscape")
         lines.append("")
         
