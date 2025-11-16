@@ -21,6 +21,10 @@ INPUT_CSV = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "input", "pitches.csv")
 )
 
+OUTPUT_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "output")
+) 
+
 
 def run_csv(csv_path: str = INPUT_CSV):
     """
@@ -51,6 +55,7 @@ def run_csv(csv_path: str = INPUT_CSV):
                 for fn in reader.fieldnames
             ]
 
+        startup_number = 1
         for row in reader:
             # Normalize keys coming from DictReader just in case
             row = {
@@ -65,11 +70,33 @@ def run_csv(csv_path: str = INPUT_CSV):
                 print(f"⚠️  Skipping row (missing name/url): {row}")
                 continue
 
-            print(f"\n🔍 Analyzing: {name}")
+            print(f"\n🔍 [{startup_number}] Analyzing: {name}")
             print(f"🔗 URL: {url}")
             
             state = AnalysisState(startup_name=name, startup_url=url)
-            analysis_graph.invoke(state)
+            result = analysis_graph.invoke(state)
+            
+            # Save the analysis to output folder (numbered folder, single file inside)
+            # Sanitize startup name for folder (keep alphanum and hyphens)
+            import re
+            safe_name = re.sub(r"[^a-z0-9-]", "", name.lower().replace(" ", "-"))
+            folder_name = f"{startup_number}-{safe_name}"
+            output_dir = os.path.join(OUTPUT_DIR, folder_name)
+            os.makedirs(output_dir, exist_ok=True)
+
+            # Single markdown file inside the numbered folder
+            output_file = os.path.join(output_dir, "web_analysis.md")
+            
+            from .renderer import render_markdown
+            from .schemas import Analysis
+            analysis = Analysis(**result["result_json"])
+            markdown = render_markdown(name, url, analysis)
+            
+            with open(output_file, "w", encoding="utf-8") as f:
+                f.write(markdown)
+            
+            print(f"  ✅ Saved to: {output_file}")
+            startup_number += 1
 
     print(f"\n{'='*60}")
     print(f"✅ Analysis complete!")
