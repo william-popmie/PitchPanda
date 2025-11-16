@@ -39,3 +39,5 @@ coverage.xml
 # Ignore local secrets file
 .env.local
 .env.*.local
+
+assets/
