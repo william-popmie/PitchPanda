@@ -1,11 +1,11 @@
 from langchain_core.prompts import ChatPromptTemplate
 
 MARKET_SIZE_PROMPT = ChatPromptTemplate.from_template("""
-You are an AI analyst calculating market size estimates for a startup. Your goal is to provide 
-**objective, reasonable estimates** based on the startup's problem and solution.
+You are a quantitative analyst calculating market size estimates for a startup. Your job is to build 
+a **bottom-up calculation** with explicit formulas and numbers. Do NOT provide generic estimates.
 
-IMPORTANT: Do NOT try to sell or pitch this startup. Provide conservative, calculated estimates 
-with clear reasoning. If the market seems small, say so. If it's uncertain, acknowledge that.
+CRITICAL: Each market size estimate MUST show the exact formula you used. Think like a spreadsheet:
+define each variable, state its numeric value, and show the multiplication/division step-by-step.
 
 TARGET STARTUP:
 - Name: {startup_name}
@@ -24,44 +24,87 @@ Active locations: {active_locations}
 ---
 
 TASK:
-Calculate TAM (Total Addressable Market), SAM (Serviceable Addressable Market), and SOM 
-(Serviceable Obtainable Market) for this startup.
+Calculate TAM, SAM, and SOM using explicit formulas. Each calculation must follow this structure:
 
-GUIDELINES:
-1. **Be objective and conservative** - don't inflate numbers to make the startup look good
-2. **Show your work** - explain the calculation methodology clearly
-3. **State assumptions** - what data points or market research did you use?
-4. **Include caveats** - what could make these numbers wrong?
-5. **Use real market data when possible** - reference industry reports, market sizes, etc.
-6. **Consider geography** - if they're only in certain locations, adjust accordingly
-7. **Be realistic about SOM** - this should be a small fraction of SAM for early-stage startups
+1. Identify the **unit of measurement** (e.g., # of companies, # of users, # of transactions)
+2. Estimate the **quantity** of that unit (cite source or reasoning)
+3. Estimate the **annual value per unit** (e.g., subscription price, transaction fee, cost savings)
+4. Multiply: Market Size = Quantity × Annual Value per Unit
+5. Show your work in the formula field
 
-APPROACH:
-- **TAM**: The total revenue opportunity if the startup captured 100% of their target market globally
-- **SAM**: The portion of TAM the startup can realistically serve given their product and geography
-- **SOM**: The portion of SAM the startup could realistically capture in the near term (1-3 years)
+DEFINITIONS:
+- **TAM**: Total Addressable Market (global, 100% capture, no constraints)
+- **SAM**: Serviceable Addressable Market (realistic subset based on geography, product fit, or segment)
+- **SOM**: Serviceable Obtainable Market (realistic capture in 1-3 years, accounting for competition and execution risk)
 
-Each estimate should include:
-- A numerical range (e.g., "$50M - $150M" or "10,000 - 25,000 potential customers")
-- Brief context on how you arrived at this number
-
-Return JSON ONLY with this schema:
+REQUIRED OUTPUT SCHEMA (JSON ONLY):
 {{
-  "tam": "Numerical estimate with brief context (1-2 sentences)",
-  "sam": "Numerical estimate with brief context (1-2 sentences)", 
-  "som": "Numerical estimate with brief context (1-2 sentences)",
-  "calculation_context": "Detailed explanation (3-5 sentences) of your methodology, assumptions, data sources, and key drivers of the calculation. Be specific about what numbers you multiplied/divided and why.",
-  "note": "Caveats and disclaimers about the accuracy of these estimates (2-3 sentences)"
+  "tam": {{
+    "value": "$X.XB" or "$XXM",
+    "formula": "Explicit calculation showing: Variable1 × Variable2 = Result",
+    "assumptions": ["assumption 1", "assumption 2"],
+    "unit": "companies | users | transactions | etc."
+  }},
+  "sam": {{
+    "value": "$X.XB" or "$XXM",
+    "formula": "Explicit calculation showing: Variable1 × Variable2 × Constraint = Result",
+    "assumptions": ["assumption 1", "assumption 2"],
+    "unit": "companies | users | transactions | etc."
+  }},
+  "som": {{
+    "value": "$X.XB" or "$XXM",
+    "formula": "Explicit calculation showing: SAM × Market Share % = Result",
+    "assumptions": ["assumption 1", "assumption 2"],
+    "unit": "companies | users | transactions | etc."
+  }},
+  "calculation_note": "2-3 sentences explaining your confidence level, data quality, and key risks to this estimate."
 }}
 
-EXAMPLE OUTPUT STYLE:
+EXAMPLE (Soccer Gear for Youth Players):
 {{
-  "tam": "$2.5B - $4B annually. Based on the global B2B SaaS market for small business inventory management (~500K businesses × $5K-$8K annual contract value).",
-  "sam": "$150M - $300M annually. Focusing on English-speaking markets (Belgium, Netherlands, UK) where they're currently active, approximately 30K small retailers × $5K-$10K ACV.",
-  "som": "$3M - $8M annually. Realistically capturing 1-2% of SAM in first 3 years (300-600 customers at $10K ACV), assuming moderate growth and competition from established players.",
-  "calculation_context": "TAM calculated using estimated 500K small retailers globally facing inventory challenges, multiplied by typical SaaS contract values in this segment ($5K-$8K based on comparable tools). SAM narrowed to active geographies (Benelux + UK) representing ~6-8% of global market. SOM assumes conservative 1-2% market penetration in 3 years, typical for bootstrapped B2B SaaS startups facing established competition. Key assumptions: comparable pricing to existing tools, steady customer acquisition, and similar retention rates to industry benchmarks.",
-  "note": "These estimates are highly uncertain and based on limited public data. Actual market size depends heavily on product-market fit, pricing strategy, and competitive dynamics. The retail tech market is crowded, so customer acquisition costs may be higher than assumed. Recommend validating with bottom-up customer research and actual conversion data."
+  "tam": {{
+    "value": "$4.2B",
+    "formula": "70M youth soccer players globally × $60/year average gear spend = $4.2B",
+    "assumptions": [
+      "70M youth players globally (FIFA youth participation data)",
+      "$60/year = 1 pair cleats ($40) + 2 jerseys ($10 each) annually"
+    ],
+    "unit": "youth soccer players"
+  }},
+  "sam": {{
+    "value": "$840M",
+    "formula": "70M players × 20% (US + EU markets) × $60/year = $840M",
+    "assumptions": [
+      "20% of global youth players in addressable markets (US + EU)",
+      "Product only available in English, limiting geographic reach"
+    ],
+    "unit": "youth soccer players in US/EU"
+  }},
+  "som": {{
+    "value": "$8.4M",
+    "formula": "$840M SAM × 1% realistic market share in 3 years = $8.4M",
+    "assumptions": [
+      "1% market share assumes capturing 140K customers (of 14M addressable)",
+      "Competitive landscape includes Nike, Adidas, and 50+ direct-to-consumer brands"
+    ],
+    "unit": "revenue in year 3"
+  }},
+  "calculation_note": "Estimates based on FIFA participation data and average youth sports spending benchmarks. High uncertainty on conversion rates and willingness to switch from established brands. Market share assumption (1%) is conservative for a niche entrant but depends heavily on marketing spend and product differentiation."
 }}
 
-Now calculate the market size for the target startup.
+INSTRUCTIONS:
+1. Start by identifying the core customer unit (e.g., # of SMBs, # of developers, # of hospitals)
+2. Research or estimate the quantity of that unit globally, then narrow by geography/segment for SAM
+3. Estimate realistic annual spend per unit (subscription, transaction fees, or cost savings)
+4. Build the formula step-by-step: Quantity × Annual Value = Market Size
+5. For SOM, apply a realistic market share % (typically 0.5-3% for early-stage startups)
+6. Be brutally honest: if the market is small or uncertain, say so clearly
+
+CRITICAL RULES:
+- Do NOT use vague phrases like "billions in opportunity" without showing the math
+- Do NOT copy generic industry reports without tying them to this specific startup's problem/solution
+- Do NOT inflate numbers to make the startup look good
+- If data is unavailable, state your assumption explicitly and mark confidence as low
+
+Now calculate the market size for the target startup using explicit formulas.
 """)

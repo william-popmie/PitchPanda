@@ -1,9 +1,10 @@
 from langchain_core.prompts import ChatPromptTemplate
 
 COMP_PROMPT = ChatPromptTemplate.from_template("""
-You are an AI analyst. Using the target startup's validated profile below, list 5–10 competing startups
-that solve the **same or very similar problem** (problem similarity should be near-identical).
-Do not try to convince; **inform only**.
+You are an evidence-driven AI analyst. Using the target startup's validated profile below, return 5–10 competing startups
+that solve the same user problem (problem similarity should be near-identical). Focus on companies that demonstrate the
+problem/solution fit on their product pages, docs, case studies, or pricing pages. Do not invent competitors — only include
+companies that have verifiable public evidence for the claims below.
 
 TARGET STARTUP (ground truth):
 - Name: {startup_name}
@@ -23,7 +24,7 @@ Active locations: {active_locations}
 ---
 
 INSTRUCTIONS
-- Return JSON ONLY as:
+- Return JSON ONLY in this exact structure:
 {{
   "competition": [
     {{
@@ -32,23 +33,31 @@ INSTRUCTIONS
       "product_type": "SaaS | App | Platform | API | Service | Hardware | Marketplace | Other",
       "sector": "Broad industry",
       "subsector": "Specific niche",
-      "problem_similarity": "1–2 lines explaining the overlap in problem focus.",
-      "solution_summary": "2–4 lines summarizing their solution and mechanism.",
-      "similarities": ["bullet 1","bullet 2"],
-      "differences": ["bullet 1","bullet 2"],
+      "problem_similarity": "1–2 lines explaining the overlap in problem focus (cite where this is stated on their site).",
+      "solution_summary": "2–4 lines summarizing their solution and mechanism (cite feature/page).",
+      "similarities": ["bullet 1 (with short evidence)", "bullet 2 (with short evidence)"],
+      "differences": ["bullet 1 (with short evidence)", "bullet 2 (with short evidence)"],
       "active_locations": ["Country/Region/City"],
-      "sources": ["https://...", "https://..."]
+      "sources": ["https://... (exact page used as evidence)"] ,
+      "confidence": "high | medium | low",
+      "why_included": "One-line justification linking the target's problem to this company's product messaging (cite source)."
     }}
   ]
 }}
 
-GUIDANCE
-- Prioritize companies clearly addressing the **same user pain** and market segment (or adjacent).
-- It's fine if their **solution differs** (e.g., API vs. full SaaS, B2B vs. B2C) — capture that in "differences".
-- Keep "similarities" focused on shared **problem/ICP**, tech approach overlaps, or use-cases.
-- Use **evidence-based** websites if you know them; if unknown, leave fields empty or concise ("Unknown").
-- Avoid generic "big tech" unless truly core competitors for the same problem.
-- Deduplicate by name/domain. Aim for 5–10 entries.
+REQUIRED GUIDELINES
+- Only include companies that have PUBLIC evidence (website, docs, press) demonstrating they address the same problem or ICP.
+- For each competitor: explicitly state the exact place you found the evidence in `sources` and include a short `why_included` line.
+- `problem_similarity` must make a direct connection to the target's problem (e.g., "Both target SMB logistics teams lacking real-time ETA for local deliveries"), preferably with a quoted phrase or paraphrase from the competitor page.
+- `solution_summary` must clearly state how their solution addresses the problem and whether it matches the target's approach or differs (explain difference).
+- `similarities` and `differences` should be concise bullets with short evidence markers (e.g., "targets same ICP (homepage hero)" or "API-first vs full product (pricing/docs)").
+- Set `confidence` to `high` when the competitor's site explicitly states the same problem/ICP or shows a product page matching the capability; `medium` when inferred from case studies or blog posts; `low` when evidence is sparse.
+- If you cannot find 5 credible matches, return only the credible ones (do not invent entries).
+- Deduplicate by company domain.
+
+OUTPUT QUALITY
+- Prioritize accuracy over quantity. If a company looks similar but you cannot find a clear page or product evidence, omit it.
+- If the competitor is an adjacent or partial competitor, mark that clearly in `differences` and set `confidence` accordingly.
 
 Now return the JSON.
 """)

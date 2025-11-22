@@ -27,6 +27,7 @@ Use the website content below as primary evidence. If claims are unclear, infer 
 Return JSON ONLY with this schema:
 
 {{
+  "company_summary": "2–3 sentence elevator pitch describing what the company does, who it serves, and its core value proposition. Should be standalone and understandable without context.",
   "problem": {{
     "general": "1–3 sentences explaining who is affected and why it matters.",
     "example": "A concrete, everyday scenario showing the pain clearly."

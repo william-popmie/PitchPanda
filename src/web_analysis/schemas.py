@@ -4,12 +4,19 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 
 
+class MarketSizeEstimate(BaseModel):
+    """Structured market size calculation with explicit formula."""
+    value: str = Field(..., description="Market size value (e.g., '$4.2B', '$840M')")
+    formula: str = Field(..., description="Explicit calculation showing variables and math")
+    assumptions: List[str] = Field(default_factory=list, description="Key assumptions made in the calculation")
+    unit: str = Field(..., description="Unit of measurement (e.g., 'companies', 'users', 'transactions')")
+
+
 class MarketSize(BaseModel):
-    tam: str = Field(..., description="Total Addressable Market with numerical estimate and context")
-    sam: str = Field(..., description="Serviceable Addressable Market with numerical estimate and context")
-    som: str = Field(..., description="Serviceable Obtainable Market with numerical estimate and context")
-    calculation_context: str = Field(..., description="Explanation of how these numbers were calculated, assumptions made, and caveats")
-    note: str = Field(default="These are rough estimates based on available data and should be validated with primary research.")
+    tam: MarketSizeEstimate = Field(..., description="Total Addressable Market with formula-based calculation")
+    sam: MarketSizeEstimate = Field(..., description="Serviceable Addressable Market with formula-based calculation")
+    som: MarketSizeEstimate = Field(..., description="Serviceable Obtainable Market with formula-based calculation")
+    calculation_note: str = Field(..., description="Confidence level, data quality assessment, and key risks")
 
 
 class Problem(BaseModel):
@@ -41,11 +48,14 @@ class Competitor(BaseModel):
     # where they're active
     active_locations: List[str] = Field(default_factory=list)
 
-    # evidence
-    sources: List[str] = Field(default_factory=list)
+    # evidence and quality
+    sources: List[str] = Field(default_factory=list, description="URLs used as evidence for this competitor")
+    confidence: Optional[str] = Field(default="medium", description="high | medium | low - confidence in the match")
+    why_included: Optional[str] = Field(default="", description="One-line justification linking target's problem to this competitor")
 
 
 class Analysis(BaseModel):
+    company_summary: str = Field(..., description="2-3 sentence elevator pitch describing the company")
     problem: Problem
     solution: Solution
     product_type: str
