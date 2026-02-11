@@ -17,7 +17,7 @@ def extract_competitive_landscape(merged_content: str) -> str:
         return None
     
     # Find the competitive landscape section
-    pattern = r'## 🏆 Competitive Landscape\s*\n(.*?)(?=\n## |\n---\n\n## |\Z)'
+    pattern = r'## Competitive Landscape\s*\n(.*?)(?=\n## |\n---\n\n## |\Z)'
     match = re.search(pattern, merged_content, re.DOTALL)
     
     if match:
@@ -47,7 +47,7 @@ def render_evaluation(evaluation: CompanyEvaluation, merged_content: str = None)
     lines.append("")
     
     # Individual Scores
-    lines.append("## 📊 Evaluation Criteria")
+    lines.append("## Evaluation Criteria")
     lines.append("")
     
     lines.append("### 1. Team")
@@ -91,7 +91,7 @@ def render_evaluation(evaluation: CompanyEvaluation, merged_content: str = None)
     competitive_landscape = extract_competitive_landscape(merged_content) if merged_content else None
     
     if competitive_landscape:
-        lines.append("## 🏆 Competitive Landscape")
+        lines.append("## Competitive Landscape")
         lines.append("")
         lines.append(competitive_landscape)
         lines.append("")
@@ -99,7 +99,7 @@ def render_evaluation(evaluation: CompanyEvaluation, merged_content: str = None)
         lines.append("")
     elif evaluation.competitor_groups:
         # Fallback to LLM-generated groups if no merged content available
-        lines.append("## 🏆 Competitive Landscape")
+        lines.append("## Competitive Landscape")
         lines.append("")
         
         for group in evaluation.competitor_groups:
@@ -113,7 +113,7 @@ def render_evaluation(evaluation: CompanyEvaluation, merged_content: str = None)
         lines.append("")
     
     # Final Comments
-    lines.append("## 💭 Final Comments & Observations")
+    lines.append("## Final Comments & Observations")
     lines.append("")
     lines.append(evaluation.comments)
     lines.append("")

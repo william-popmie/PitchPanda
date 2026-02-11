@@ -40,8 +40,8 @@ def run_csv(csv_path: str = INPUT_CSV):
         )
 
     print(f"\n{'='*60}")
-    print(f"🌐 Starting Web Analysis")
-    print(f"📄 Reading from: {csv_path}")
+    print(f"Starting Web Analysis")
+    print(f"Reading from: {csv_path}")
     print(f"{'='*60}\n")
 
     # Read with utf-8-sig to strip BOM if present
@@ -67,11 +67,11 @@ def run_csv(csv_path: str = INPUT_CSV):
             url = row.get("startup_url", "")
             
             if not name or not url:
-                print(f"⚠️  Skipping row (missing name/url): {row}")
+                print(f"Skipping row (missing name/url): {row}")
                 continue
 
-            print(f"\n🔍 [{startup_number}] Analyzing: {name}")
-            print(f"🔗 URL: {url}")
+            print(f"\n[{startup_number}] Analyzing: {name}")
+            print(f"URL: {url}")
             
             state = AnalysisState(startup_name=name, startup_url=url)
             result = analysis_graph.invoke(state)
@@ -95,11 +95,11 @@ def run_csv(csv_path: str = INPUT_CSV):
             with open(output_file, "w", encoding="utf-8") as f:
                 f.write(markdown)
             
-            print(f"  ✅ Saved to: {output_file}")
+            print(f"Saved to: {output_file}")
             startup_number += 1
 
     print(f"\n{'='*60}")
-    print(f"✅ Analysis complete!")
+    print(f"Analysis complete!")
     print(f"{'='*60}\n")
 
 

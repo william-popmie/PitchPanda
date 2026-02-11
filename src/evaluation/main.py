@@ -38,15 +38,15 @@ def evaluate_company_analysis(company_dir: str) -> bool:
     company_name = os.path.basename(company_dir)
     
     print(f"\n{'='*60}")
-    print(f"📊 Evaluating: {company_name}")
+    print(f"Evaluating: {company_name}")
     print(f"{'='*60}\n")
     
     # Check for merged analysis
     merged_path = os.path.join(company_dir, "merged_analysis.md")
     
     if not os.path.exists(merged_path):
-        print(f"  ❌ No merged analysis found in {company_dir}")
-        print(f"      Run merge analysis first!")
+        print(f"No merged analysis found in {company_dir}")
+        print(f"Run merge analysis first!")
         return False
     
     print(f"  📂 Found merged analysis")
@@ -70,14 +70,14 @@ def evaluate_company_analysis(company_dir: str) -> bool:
             merged_content = result.merged_content
         
         if not evaluation_data:
-            print("  ❌ Failed to generate evaluation")
+            print("Failed to generate evaluation")
             return False
         
         # Convert to schema object
         evaluation = CompanyEvaluation(**evaluation_data)
         
         # Render to markdown with merged_content for competitive landscape
-        print("  📝 Rendering evaluation...")
+        print("Rendering evaluation...")
         md_content = render_evaluation(evaluation, merged_content=merged_content)
         
         # Save to file
@@ -85,14 +85,14 @@ def evaluate_company_analysis(company_dir: str) -> bool:
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(md_content)
         
-        print(f"  ✅ Saved to: {output_path}")
-        print(f"  ⭐ Overall Score: {evaluation.overall_score:.1f}/5.0")
+        print(f"Saved to: {output_path}")
+        print(f"Overall Score: {evaluation.overall_score:.1f}/5.0")
         print()
         
         return True
         
     except Exception as e:
-        print(f"  ❌ Error during evaluation: {str(e)}")
+        print(f"Error during evaluation: {str(e)}")
         import traceback
         traceback.print_exc()
         return False
@@ -106,12 +106,12 @@ def run_all_companies(output_dir: str = OUTPUT_DIR) -> None:
         output_dir: Path to output directory containing company folders
     """
     if not os.path.exists(output_dir):
-        print(f"❌ Output directory not found: {output_dir}")
+        print(f"Output directory not found: {output_dir}")
         return
     
     print(f"\n{'='*60}")
-    print(f"📊 Company Evaluation - All Companies")
-    print(f"📂 Output directory: {output_dir}")
+    print(f"Company Evaluation - All Companies")
+    print(f"Output directory: {output_dir}")
     print(f"{'='*60}\n")
     
     # Find all company directories with merged analysis
@@ -146,15 +146,15 @@ def run_all_companies(output_dir: str = OUTPUT_DIR) -> None:
     
     # Summary
     print(f"\n{'='*60}")
-    print(f"✅ Evaluation Complete!")
-    print(f"📊 Evaluated: {success_count}/{len(company_dirs)} companies")
+    print(f"Evaluation Complete!")
+    print(f"Evaluated: {success_count}/{len(company_dirs)} companies")
     print(f"{'='*60}\n")
     
     if success_count > 0:
-        print("💡 Next steps:")
-        print("   - Review evaluation.md files in each company folder")
-        print("   - Compare scores across companies")
-        print("   - Use scores to prioritize investment decisions")
+        print("Next steps:")
+        print("Review evaluation.md files in each company folder")
+        print("Compare scores across companies")
+        print("Use scores to prioritize investment decisions")
         print()
 
 

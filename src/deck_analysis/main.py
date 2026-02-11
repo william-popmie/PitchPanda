@@ -59,13 +59,13 @@ def analyze_deck(pdf_path: str) -> None:
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(md_content)
             
-            print(f"\n✅ Analysis saved to: {output_path}")
+            print(f"\nAnalysis saved to: {output_path}")
             print(f"{'='*60}\n")
         else:
-            print(f"\n❌ Analysis failed for {pdf_path}")
+            print(f"\nAnalysis failed for {pdf_path}")
     
     except Exception as e:
-        print(f"\n❌ Error analyzing {pdf_path}: {e}")
+        print(f"\nError analyzing {pdf_path}: {e}")
         import traceback
         traceback.print_exc()
 
@@ -73,7 +73,7 @@ def analyze_deck(pdf_path: str) -> None:
 def analyze_all_decks():
     """Analyze all PDF files in the input/decks directory."""
     if not os.path.exists(INPUT_DECKS_DIR):
-        print(f"❌ Input directory not found: {INPUT_DECKS_DIR}")
+        print(f"Input directory not found: {INPUT_DECKS_DIR}")
         print(f"Create it and add PDF files to analyze.")
         return
     
@@ -81,7 +81,7 @@ def analyze_all_decks():
     pdf_files = list(Path(INPUT_DECKS_DIR).glob("*.pdf"))
     
     if not pdf_files:
-        print(f"❌ No PDF files found in {INPUT_DECKS_DIR}")
+        print(f"No PDF files found in {INPUT_DECKS_DIR}")
         print(f"Add some pitch deck PDFs to analyze.")
         return
     
@@ -97,7 +97,7 @@ def main():
         # Analyze specific file
         pdf_path = sys.argv[1]
         if not os.path.exists(pdf_path):
-            print(f"❌ File not found: {pdf_path}")
+            print(f"File not found: {pdf_path}")
             sys.exit(1)
         analyze_deck(pdf_path)
     else:

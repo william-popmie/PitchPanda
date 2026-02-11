@@ -49,10 +49,10 @@ CORE PRINCIPLES:
 TRUSTWORTHINESS LEVELS:
 
 **Explicit** (clearly stated with evidence):
-- "Seed Funding: $1.5M from Acme Ventures" ✅
-- "MRR: $25K as of Oct 2024" ✅
-- Customer quote with name and company ✅
-- Patent number with filing date ✅
+- "Seed Funding: $1.5M from Acme Ventures"
+- "MRR: $25K as of Oct 2024"
+- Customer quote with name and company
+- Patent number with filing date
 
 **Inferred** (reasonable interpretation):
 - "Raised $1.5M in 2024" → Likely funding (inferred stage)

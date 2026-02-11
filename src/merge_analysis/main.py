@@ -38,7 +38,7 @@ def merge_company_analysis(company_dir: str) -> bool:
     company_name = os.path.basename(company_dir)
     
     print(f"\n{'='*60}")
-    print(f"🔀 Merging Analysis: {company_name}")
+    print(f"Merging Analysis: {company_name}")
     print(f"{'='*60}\n")
     
     # Check for input files
@@ -49,14 +49,14 @@ def merge_company_analysis(company_dir: str) -> bool:
     web_exists = os.path.exists(web_path)
     
     if not deck_exists and not web_exists:
-        print(f"  ❌ No analysis files found in {company_dir}")
+        print(f"No analysis files found in {company_dir}")
         return False
     
-    print(f"  📂 Found:")
+    print(f"Found:")
     if deck_exists:
-        print(f"    ✓ Pitch deck analysis")
+        print(f"Pitch deck analysis")
     if web_exists:
-        print(f"    ✓ Web analysis")
+        print(f"Web analysis")
     print()
     
     # Create initial state
@@ -77,14 +77,14 @@ def merge_company_analysis(company_dir: str) -> bool:
             merged_data = result.merged_analysis
         
         if not merged_data:
-            print("  ❌ Failed to generate merged analysis")
+            print("Failed to generate merged analysis")
             return False
         
         # Convert to schema object
         merged_analysis = MergedAnalysis(**merged_data)
         
         # Render to markdown
-        print("  📝 Rendering merged analysis...")
+        print("Rendering merged analysis...")
         md_content = render_markdown(merged_analysis)
         
         # Save to file
@@ -92,13 +92,13 @@ def merge_company_analysis(company_dir: str) -> bool:
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(md_content)
         
-        print(f"  ✅ Saved to: {output_path}")
+        print(f"Saved to: {output_path}")
         print()
         
         return True
         
     except Exception as e:
-        print(f"  ❌ Error during merge: {str(e)}")
+        print(f"Error during merge: {str(e)}")
         import traceback
         traceback.print_exc()
         return False
@@ -112,12 +112,12 @@ def run_all_companies(output_dir: str = OUTPUT_DIR) -> None:
         output_dir: Path to output directory containing company folders
     """
     if not os.path.exists(output_dir):
-        print(f"❌ Output directory not found: {output_dir}")
+        print(f"Output directory not found: {output_dir}")
         return
     
     print(f"\n{'='*60}")
-    print(f"🔀 Merge Analysis - All Companies")
-    print(f"📂 Output directory: {output_dir}")
+    print(f"Merge Analysis - All Companies")
+    print(f"Output directory: {output_dir}")
     print(f"{'='*60}\n")
     
     # Find all company directories
@@ -131,7 +131,7 @@ def run_all_companies(output_dir: str = OUTPUT_DIR) -> None:
                 company_dirs.append(item_path)
     
     if not company_dirs:
-        print("❌ No company directories with analysis files found")
+        print("No company directories with analysis files found")
         return
     
     print(f"Found {len(company_dirs)} companies to process\n")
@@ -144,7 +144,7 @@ def run_all_companies(output_dir: str = OUTPUT_DIR) -> None:
     
     # Summary
     print(f"\n{'='*60}")
-    print(f"✅ Completed: {success_count}/{len(company_dirs)} companies")
+    print(f"Completed: {success_count}/{len(company_dirs)} companies")
     print(f"{'='*60}\n")
 
 

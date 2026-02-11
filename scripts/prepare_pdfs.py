@@ -27,11 +27,11 @@ def main():
     decks_dir = base_dir / "input" / "decks"
     
     if not csv_path.exists():
-        print(f"❌ CSV not found: {csv_path}")
+        print(f"CSV not found: {csv_path}")
         return
     
     if not decks_dir.exists():
-        print(f"❌ Decks directory not found: {decks_dir}")
+        print(f"Decks directory not found: {decks_dir}")
         return
     
     # Read company names
@@ -62,18 +62,18 @@ def main():
     for i, name in enumerate(companies, 1):
         slug = slugify(name)
         expected_file = decks_dir / f"{slug}.pdf"
-        status = "✅" if expected_file.exists() else "❌"
+        status = "Working" if expected_file.exists() else "Failed"
         print(f"{i}. {name}")
         print(f"   Expected: {slug}.pdf {status}")
     
     print("\n" + "="*60)
-    print("📄 PDF Files in input/decks/")
+    print("PDF Files in input/decks/")
     print("="*60)
     for pdf in pdf_files:
         print(f"- {pdf.name}")
     
     print("\n" + "="*60)
-    print("🔧 Rename Suggestions")
+    print("Rename Suggestions")
     print("="*60)
     
     # Suggest renames
@@ -92,18 +92,18 @@ def main():
                 print(f"\n'{name}' → {slug}.pdf")
                 print(f"Potential matches:")
                 for match in matches:
-                    print(f"  - {match.name}")
-                    print(f"    Rename with: mv '{match}' '{expected_file}'")
+                    print(match.name)
+                    print(f"Rename with: mv '{match}' '{expected_file}'")
             else:
                 print(f"\n'{name}' → {slug}.pdf")
-                print(f"  ⚠️  No matching PDF found")
+                print(f"No matching PDF found")
     
     print("\n" + "="*60)
-    print("✅ Done!")
+    print("Done!")
     print("="*60)
     print("\nTo rename a file, use:")
-    print("  cd input/decks")
-    print("  mv 'old-name.pdf' 'new-name.pdf'")
+    print("cd input/decks")
+    print("mv 'old-name.pdf' 'new-name.pdf'")
     print()
 
 

@@ -74,7 +74,7 @@ def render_markdown(analysis: MergedAnalysis) -> str:
     lines.append("")
     
     # Company Overview
-    lines.append("## 📋 Company Overview")
+    lines.append("##Company Overview")
     lines.append("")
     
     if analysis.company_overview.website:
@@ -105,7 +105,7 @@ def render_markdown(analysis: MergedAnalysis) -> str:
     lines.append("")
     
     # Problem & Solution
-    lines.append("## 🎯 Problem & Solution")
+    lines.append("##Problem & Solution")
     lines.append("")
     
     # Problem section
@@ -156,7 +156,7 @@ def render_markdown(analysis: MergedAnalysis) -> str:
     lines.append("")
     
     # Market Information
-    lines.append("## 📊 Market Information")
+    lines.append("##Market Information")
     lines.append("")
     
     if analysis.market.target_market:
@@ -185,7 +185,7 @@ def render_markdown(analysis: MergedAnalysis) -> str:
     lines.append("")
     
     # Business Model
-    lines.append("## 💼 Business Model")
+    lines.append("## Business Model")
     lines.append("")
     
     if analysis.business_model.overview:
@@ -231,7 +231,7 @@ def render_markdown(analysis: MergedAnalysis) -> str:
         lines.append("")
     
     # Financial Data
-    lines.append("## 💰 Financial Data & Traction")
+    lines.append("## Financial Data & Traction")
     lines.append("")
     
     if analysis.financial_data.funding_raised:
@@ -267,7 +267,7 @@ def render_markdown(analysis: MergedAnalysis) -> str:
     
     # Competitive Landscape
     if analysis.competitors:
-        lines.append("## 🏆 Competitive Landscape")
+        lines.append("## Competitive Landscape")
         lines.append("")
         
         for competitor in analysis.competitors:
@@ -286,7 +286,7 @@ def render_markdown(analysis: MergedAnalysis) -> str:
     
     # Competitive Advantages
     if analysis.competitive_advantages:
-        lines.append("## 🛡️ Competitive Advantages & IP")
+        lines.append("## Competitive Advantages & IP")
         lines.append("")
         
         for advantage in analysis.competitive_advantages:
@@ -302,7 +302,7 @@ def render_markdown(analysis: MergedAnalysis) -> str:
     
     # Technology
     if analysis.technology:
-        lines.append("## 🔧 Technology")
+        lines.append("## Technology")
         lines.append("")
         lines.append(render_sourced_info(analysis.technology, ""))
         lines.append("---")
@@ -310,7 +310,7 @@ def render_markdown(analysis: MergedAnalysis) -> str:
     
     # Go-to-Market
     if analysis.go_to_market:
-        lines.append("## 🚀 Go-to-Market Strategy")
+        lines.append("## Go-to-Market Strategy")
         lines.append("")
         lines.append(render_sourced_info(analysis.go_to_market, ""))
         lines.append("---")
@@ -318,7 +318,7 @@ def render_markdown(analysis: MergedAnalysis) -> str:
     
     # Awards & Recognition
     if analysis.awards_recognition:
-        lines.append("## 🏅 Awards & Recognition")
+        lines.append("## Awards & Recognition")
         lines.append("")
         for award in analysis.awards_recognition:
             lines.append(f"- {award.content} {format_source(award.source)}")
@@ -328,7 +328,7 @@ def render_markdown(analysis: MergedAnalysis) -> str:
     
     # Customer Evidence
     if analysis.customer_evidence:
-        lines.append("## 💬 Customer Evidence & Validation")
+        lines.append("## Customer Evidence & Validation")
         lines.append("")
         for evidence in analysis.customer_evidence:
             lines.append(f"- {evidence.content} {format_source(evidence.source)}")
@@ -338,7 +338,7 @@ def render_markdown(analysis: MergedAnalysis) -> str:
     
     # Additional Insights
     if analysis.additional_insights:
-        lines.append("## 💡 Additional Insights")
+        lines.append("## Additional Insights")
         lines.append("")
         for insight in analysis.additional_insights:
             lines.append(f"- {insight.content} {format_source(insight.source)}")
@@ -348,7 +348,7 @@ def render_markdown(analysis: MergedAnalysis) -> str:
     
     # Deck Completeness Notes
     if analysis.deck_completeness_notes:
-        lines.append("## 📝 Analysis Notes")
+        lines.append("## Analysis Notes")
         lines.append("")
         lines.append("### Pitch Deck Completeness")
         lines.append(analysis.deck_completeness_notes)

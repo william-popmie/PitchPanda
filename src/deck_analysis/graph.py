@@ -35,7 +35,7 @@ class DeckState(BaseModel):
 
 def convert_pdf_node(state: DeckState) -> dict:
     """Convert PDF to images."""
-    print(f"📄 Converting PDF: {state.pdf_path}")
+    print(f"    Converting PDF: {state.pdf_path}")
     
     # Get deck name from filename
     from pathlib import Path
@@ -43,27 +43,27 @@ def convert_pdf_node(state: DeckState) -> dict:
     
     # Convert PDF to images
     image_paths = pdf_to_images(state.pdf_path)
-    print(f"✅ Converted {len(image_paths)} slides to images")
+    print(f"Converted {len(image_paths)} slides to images")
     
     return {"deck_name": deck_name, "image_paths": image_paths}
 
 
 def encode_images_node(state: DeckState) -> dict:
     """Encode images to base64."""
-    print(f"🖼️  Encoding {len(state.image_paths)} images...")
+    print(f"Encoding {len(state.image_paths)} images...")
     
     images_base64 = [
         encode_image_base64(img_path) 
         for img_path in state.image_paths
     ]
     
-    print(f"✅ Encoded {len(images_base64)} images")
+    print(f"Encoded {len(images_base64)} images")
     return {"images_base64": images_base64}
 
 
 def analyze_deck_node(state: DeckState) -> dict:
     """Analyze the entire deck with GPT-4 Vision using structured output."""
-    print(f"🤖 Analyzing deck with GPT-4 Vision...")
+    print(f"Analyzing deck with GPT-4 Vision...")
     
     # Create message with all slides
     messages = create_deck_summary_message(state.images_base64)
@@ -76,7 +76,7 @@ def analyze_deck_node(state: DeckState) -> dict:
         )
         print(f"  ✓ Received response from GPT-4 Vision")
     except Exception as e:
-        print(f"⚠️  JSON mode failed: {e}, trying without")
+        print(f"JSON mode failed: {e}, trying without")
         response = vision_llm.invoke(messages)
     
     # Parse JSON response
@@ -94,10 +94,10 @@ def analyze_deck_node(state: DeckState) -> dict:
         
         analysis_json = json.loads(json_str)
         print(f"  ✓ Successfully parsed JSON response")
-        print(f"✅ Analysis complete")
+        print(f"Analysis complete")
         return {"analysis_json": analysis_json}
     except Exception as e:
-        print(f"⚠️  JSON parsing failed: {e}")
+        print(f"JSON parsing failed: {e}")
         print(f"  Response preview: {str(response.content)[:500]}...")
         # Fallback to basic structure
         analysis_json = {
@@ -113,7 +113,7 @@ def validate_analysis_node(state: DeckState) -> dict:
     
     # If we already have a final_analysis from structured output, just return it
     if state.final_analysis is not None:
-        print(f"✅ Using structured output (no validation needed)")
+        print(f"Using structured output (no validation needed)")
         return {"final_analysis": state.final_analysis}
     
     import json
@@ -161,11 +161,11 @@ def validate_analysis_node(state: DeckState) -> dict:
             total_slides=len(state.image_paths),
             **fixed_json
         )
-        print(f"✅ Validation successful")
+        print(f"Validation successful")
         return {"final_analysis": analysis}
     except Exception as e:
-        print(f"⚠️  Validation failed: {str(e)[:200]}")
-        print(f"⚠️  Analysis JSON keys: {list(state.analysis_json.keys())[:20]}")
+        print(f"Validation failed: {str(e)[:200]}")
+        print(f"Analysis JSON keys: {list(state.analysis_json.keys())[:20]}")
         
         # Try to salvage what we can from the analysis_json
         salvaged_data = {
@@ -239,13 +239,13 @@ def validate_analysis_node(state: DeckState) -> dict:
         
         try:
             # Try to create analysis with salvaged data
-            print(f"  🔧 Attempting to create analysis with {len(salvaged_data)} salvaged fields...")
+            print(f"Attempting to create analysis with {len(salvaged_data)} salvaged fields...")
             analysis = DeckAnalysis(**salvaged_data)
-            print(f"⚠️  Created analysis with salvaged data")
+            print(f"Created analysis with salvaged data")
             return {"final_analysis": analysis}
         except Exception as e2:
-            print(f"❌ Salvage failed: {str(e2)[:300]}")
-            print(f"  🔍 Problematic fields - trying to skip them...")
+            print(f"Salvage failed: {str(e2)[:300]}")
+            print(f"Problematic fields - trying to skip them...")
             
             # More aggressive salvage - skip any fields that cause validation errors
             safe_data = {
@@ -262,15 +262,15 @@ def validate_analysis_node(state: DeckState) -> dict:
                     DeckAnalysis(**test_data)
                     safe_data[key] = value
                 except:
-                    print(f"    ⚠️  Skipping field '{key}' - causes validation error")
+                    print(f"Skipping field '{key}' - causes validation error")
             
             # Create absolute minimal valid analysis
             try:
                 analysis = DeckAnalysis(**safe_data)
-                print(f"⚠️  Created minimal analysis with {len(safe_data)} safe fields")
+                print(f"Created minimal analysis with {len(safe_data)} safe fields")
                 return {"final_analysis": analysis}
             except Exception as e3:
-                print(f"❌ Even minimal salvage failed: {str(e3)[:200]}")
+                print(f"Even minimal salvage failed: {str(e3)[:200]}")
                 # Last resort - completely minimal
                 analysis = DeckAnalysis(
                     deck_name=state.deck_name,

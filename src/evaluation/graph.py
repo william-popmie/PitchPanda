@@ -31,16 +31,16 @@ def load_merged_analysis(state: EvaluationState) -> dict:
     if state.get("merged_analysis_path") and os.path.exists(state["merged_analysis_path"]):
         with open(state["merged_analysis_path"], "r", encoding="utf-8") as f:
             merged_content = f.read()
-        print(f"    ✓ Loaded merged analysis ({len(merged_content)} chars)")
+        print(f"Loaded merged analysis ({len(merged_content)} chars)")
     else:
-        print("    ⚠️  No merged analysis found")
+        print("No merged analysis found")
     
     return {"merged_content": merged_content}
 
 
 def evaluate_company(state: EvaluationState) -> dict:
     """Evaluate company with LLM scoring."""
-    print("  📊 Evaluating company...")
+    print(" Evaluating company...")
     
     # Initialize LLM with structured output
     llm = ChatOpenAI(model="gpt-4o", temperature=0)

@@ -91,7 +91,7 @@ def run_web_analysis(company_name: str, company_url: str, output_dir: str) -> bo
         True if successful, False otherwise
     """
     try:
-        print(f"  🌐 Running web analysis...")
+        print(f"Running web analysis...")
         
         # Run the analysis graph
         state = AnalysisState(startup_name=company_name, startup_url=company_url)
@@ -112,11 +112,11 @@ def run_web_analysis(company_name: str, company_url: str, output_dir: str) -> bo
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(md_content)
         
-        print(f"  ✅ Web analysis saved to: {output_path}")
+        print(f"Web analysis saved to: {output_path}")
         return True
         
     except Exception as e:
-        print(f"  ❌ Web analysis failed: {e}")
+        print(f"Web analysis failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -135,7 +135,7 @@ def run_deck_analysis(company_name: str, pdf_path: str, output_dir: str) -> bool
         True if successful, False otherwise
     """
     try:
-        print(f"  🎯 Running deck analysis on: {Path(pdf_path).name}")
+        print(f"Running deck analysis on: {Path(pdf_path).name}")
         
         # Create initial state
         state = DeckState(pdf_path=pdf_path)
@@ -158,14 +158,14 @@ def run_deck_analysis(company_name: str, pdf_path: str, output_dir: str) -> bool
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(md_content)
             
-            print(f"  ✅ Deck analysis saved to: {output_path}")
+            print(f"Deck analysis saved to: {output_path}")
             return True
         else:
-            print(f"  ❌ Deck analysis failed - no result")
+            print(f"Deck analysis failed - no result")
             return False
             
     except Exception as e:
-        print(f"  ❌ Deck analysis failed: {e}")
+        print(f"Deck analysis failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -183,7 +183,7 @@ def run_merge_analysis(company_name: str, output_dir: str) -> bool:
         True if successful, False otherwise
     """
     try:
-        print(f"  🔀 Running merge analysis...")
+        print(f"Running merge analysis...")
         
         # Check for input files
         deck_path = os.path.join(output_dir, "deck_analysis.md")
@@ -193,7 +193,7 @@ def run_merge_analysis(company_name: str, output_dir: str) -> bool:
         web_exists = os.path.exists(web_path)
         
         if not deck_exists and not web_exists:
-            print(f"  ⚠️  No analysis files found to merge")
+            print(f"No analysis files found to merge")
             return False
         
         # Create initial state
@@ -213,7 +213,7 @@ def run_merge_analysis(company_name: str, output_dir: str) -> bool:
             merged_data = result.merged_analysis
         
         if not merged_data:
-            print("  ❌ Merge analysis failed - no result")
+            print("Merge analysis failed - no result")
             return False
         
         # Convert to schema object
@@ -227,11 +227,11 @@ def run_merge_analysis(company_name: str, output_dir: str) -> bool:
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(md_content)
         
-        print(f"  ✅ Merged analysis saved to: {output_path}")
+        print(f"Merged analysis saved to: {output_path}")
         return True
         
     except Exception as e:
-        print(f"  ❌ Merge analysis failed: {e}")
+        print(f"Merge analysis failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -249,13 +249,13 @@ def run_evaluation(company_name: str, output_dir: str) -> bool:
         True if successful, False otherwise
     """
     try:
-        print(f"  📊 Running investment evaluation...")
+        print(f"Running investment evaluation...")
         
         # Check for merged analysis
         merged_path = os.path.join(output_dir, "merged_analysis.md")
         
         if not os.path.exists(merged_path):
-            print(f"  ⚠️  No merged analysis found to evaluate")
+            print(f"No merged analysis found to evaluate")
             return False
         
         # Create initial state
@@ -274,7 +274,7 @@ def run_evaluation(company_name: str, output_dir: str) -> bool:
             evaluation_data = result.evaluation
         
         if not evaluation_data:
-            print("  ❌ Evaluation failed - no result")
+            print("Evaluation failed - no result")
             return False
         
         # Convert to schema object
@@ -288,12 +288,12 @@ def run_evaluation(company_name: str, output_dir: str) -> bool:
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(md_content)
         
-        print(f"  ✅ Evaluation saved to: {output_path}")
-        print(f"  ⭐ Score: {evaluation.overall_score:.1f}/5.0")
+        print(f"Evaluation saved to: {output_path}")
+        print(f"Score: {evaluation.overall_score:.1f}/5.0")
         return True
         
     except Exception as e:
-        print(f"  ❌ Evaluation failed: {e}")
+        print(f"Evaluation failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -309,7 +309,7 @@ def analyze_company(company_name: str, company_url: str, csv_path: str = INPUT_C
         csv_path: Path to the CSV file (used to locate decks directory)
     """
     print(f"\n{'='*60}")
-    print(f"📊 Analyzing: {company_name}")
+    print(f"Analyzing: {company_name}")
     print(f"{'='*60}")
     
     # Create company-specific output directory
@@ -327,15 +327,15 @@ def analyze_company(company_name: str, company_url: str, csv_path: str = INPUT_C
     if company_url:
         web_success = run_web_analysis(company_name, company_url, company_output_dir)
     else:
-        print(f"  ⚠️  No URL provided - skipping web analysis")
+        print(f"No URL provided - skipping web analysis")
     
     # Find and run deck analysis
     pdf_path = find_deck_pdf(company_name, INPUT_DECKS_DIR)
     if pdf_path:
         deck_success = run_deck_analysis(company_name, pdf_path, company_output_dir)
     else:
-        print(f"  ⚠️  No PDF found for {company_name} - skipping deck analysis")
-        print(f"      Expected location: {INPUT_DECKS_DIR}/{company_slug}.pdf")
+        print(f"No PDF found for {company_name} - skipping deck analysis")
+        print(f"Expected location: {INPUT_DECKS_DIR}/{company_slug}.pdf")
     
     # Run merge analysis if we have at least one analysis
     if web_success or deck_success:
@@ -346,15 +346,15 @@ def analyze_company(company_name: str, company_url: str, csv_path: str = INPUT_C
         eval_success = run_evaluation(company_name, company_output_dir)
     
     # Summary
-    print(f"\n  📁 Results saved to: {company_output_dir}")
+    print(f"\n Results saved to: {company_output_dir}")
     if web_success:
-        print(f"     ✓ web_analysis.md")
+        print(f"web_analysis.md")
     if deck_success:
-        print(f"     ✓ deck_analysis.md")
+        print(f"deck_analysis.md")
     if merge_success:
-        print(f"     ✓ merged_analysis.md")
+        print(f"merged_analysis.md")
     if eval_success:
-        print(f"     ✓ evaluation.md ⭐")
+        print(f"evaluation.md")
     
     if not web_success and not deck_success:
         print(f"  ⚠️  No analyses completed for {company_name}")
@@ -369,16 +369,16 @@ def run_all_companies(csv_path: str = INPUT_CSV):
     """
     if not os.path.exists(csv_path):
         raise SystemExit(
-            f"❌ Missing input CSV at {csv_path}\n"
+            f"Missing input CSV at {csv_path}\n"
             f"Expected columns: startup_name,startup_url"
         )
 
     print(f"\n{'='*60}")
-    print(f"🚀 PitchPanda - Complete Startup Analysis")
+    print(f"PitchPanda - Complete Startup Analysis")
     print(f"{'='*60}")
-    print(f"📄 Reading from: {csv_path}")
-    print(f"📁 Output to: {OUTPUT_DIR}")
-    print(f"\n🔄 Pipeline: Web Analysis → Deck Analysis → Merge Analysis")
+    print(f"Reading from: {csv_path}")
+    print(f"Output to: {OUTPUT_DIR}")
+    print(f"\nPipeline: Web Analysis → Deck Analysis → Merge Analysis")
     print(f"{'='*60}\n")
 
     # Read CSV and process each company
@@ -405,21 +405,21 @@ def run_all_companies(csv_path: str = INPUT_CSV):
             company_url = row.get("startup_url", "")
             
             if not company_name:
-                print(f"⚠️  Skipping row (missing company name): {row}")
+                print(f"Skipping row (missing company name): {row}")
                 continue
 
             analyze_company(company_name, company_url, csv_path)
             companies_processed += 1
 
     print(f"\n{'='*60}")
-    print(f"✅ Complete Analysis Finished!")
+    print(f"Complete Analysis Finished!")
     print(f"{'='*60}")
-    print(f"📊 Processed {companies_processed} companies")
-    print(f"📁 Results in: {OUTPUT_DIR}")
-    print(f"\n📄 Generated files per company:")
-    print(f"   • web_analysis.md    - Web scraping & analysis")
-    print(f"   • deck_analysis.md   - Pitch deck analysis")
-    print(f"   • merged_analysis.md - Comprehensive overview ⭐")
+    print(f"Processed {companies_processed} companies")
+    print(f"Results in: {OUTPUT_DIR}")
+    print(f"\n Generated files per company:")
+    print(f"-web_analysis.md - Web scraping & analysis")
+    print(f"-deck_analysis.md - Pitch deck analysis")
+    print(f"merged_analysis.md - Comprehensive overview")
     print(f"{'='*60}\n")
 
 

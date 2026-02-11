@@ -409,7 +409,7 @@ def render_deck_markdown(analysis: DeckAnalysis) -> str:
     # Text-Heavy Sections
     if analysis.text_heavy_sections:
         lines.append("---\n")
-        lines.append("## 📄 Detailed Content Sections\n")
+        lines.append("##     Detailed Content Sections\n")
         for section in analysis.text_heavy_sections:
             trust_icon = {
                 "explicit": "✅",
