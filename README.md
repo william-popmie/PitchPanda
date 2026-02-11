@@ -34,6 +34,14 @@ export OPENAI_API_KEY="sk-..."
 python -m src.main
 ```
 
+Add startup URLs to `input/pitches.csv`:
+
+```csv
+startup_name,startup_url
+Chartera,https://www.chartera.io
+Supercity AI,https://www.supercity.ai
+```
+
 Results appear in `output/` organized by startup name.
 
 ## Key components
