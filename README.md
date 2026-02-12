@@ -1,3 +1,10 @@
+# Roadmap
+
+- **Web - UI implementation** — Build an interactive dashboard for real-time analysis, enabling analysts to explore company data, compare metrics, and track analysis progress without CLI overhead.
+- **Use Perplexity / Gemini for web searches** — Integrate better search APIs alongside web scraping.
+- **Improve use of model chaining** — Optimize LangGraph orchestration to enable multi-step reasoning chains, and improve accuracy through iterative refinement of analyses.
+- **Auto-improvement by learning** — Implement continuous model optimization through feedback loops.
+
 # PitchPanda
 
 PitchPanda is an AI-powered analysis pipeline for VC analysts to evaluate startup pitch decks and websites. It takes a CSV list of startups and pitch deck PDFs as input, then outputs markdown analyses per startup with important metrics, market insights, and competitive positioning.
